@@ -49,18 +49,20 @@ An end-to-end, AI-powered computer vision fitness application that monitors exer
 ## 💻 Local Installation & Setup
 
 ### Prerequisites
-- Python 3.10 or higher
+- Python 3.10 - 3.12 (Recommended for MediaPipe Pose solutions compatibility)
 - Node.js 18 or higher
 - Git
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/shivp7612/AI_GYM_Trainer.git
+git clone https://github.com/nakulbjain/AI_GYM_Trainer.git
 cd AI_GYM_Trainer
 ```
 
 ### 2. Backend Setup
 ```bash
+cd backend
+
 # Create virtual environment (optional)
 python -m venv venv
 # On Windows:
@@ -69,10 +71,10 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install backend dependencies
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 
 # Start FastAPI backend server
-uvicorn backend.main:app --reload --port 8000
+uvicorn main:app --reload --port 8000
 ```
 Backend server will run at: `http://localhost:8000`
 
@@ -96,31 +98,41 @@ Frontend web application will run at: `http://localhost:5173`
 AI_GYM_Trainer/
 ├── backend/
 │   ├── ai_logic/
-│   │   ├── biomechanics.py       # Joint stress & fatigue analyzer
 │   │   ├── chatbot.py            # AI Fitness assistant response engine
+│   │   ├── fatigue.py            # Physical fatigue and tremble estimator
 │   │   ├── planner.py            # Custom workout & diet plan generator
 │   │   ├── readiness.py          # Daily training readiness score calculator
-│   │   ├── report_generator.py   # ReportLab PDF generator
+│   │   ├── report_generator.py   # ReportLab PDF report generator
 │   │   └── socket_manager.py     # Real-time WebSocket frame & pose engine
-│   ├── database.py               # SQLite database session configuration
+│   ├── assets/videos/            # Reference exercise demo videos
+│   ├── core/
+│   │   ├── exercise_verifier.py  # Category-based posture rules & verifiers
+│   │   ├── injury_detection.py   # Joint mechanics safety analyzer
+│   │   └── pose_detector.py      # MediaPipe pose wrapper
+│   ├── data/                     # Pose recording datasets
+│   ├── exercises/
+│   │   ├── exercise_dict.py      # Angle targets and posture profiles
+│   │   └── motion_profiler.py    # Angle state machines & rep counters
+│   ├── models/                   # Classifier weights
+│   ├── utils/                    # Angle math & HUD visualizers
+│   ├── database.py               # SQLite / PostgreSQL session configuration
 │   ├── main.py                   # FastAPI REST routes & WebSocket endpoint
-│   ├── models.py                 # SQLAlchemy relational models
+│   ├── main_desktop.py           # Standalone OpenCV desktop window tracker
+│   ├── models.py                 # SQLAlchemy relational ORM models
 │   ├── schemas.py                # Pydantic API response schemas
 │   └── requirements.txt          # Python dependencies
-├── core/
-│   ├── exercise_verifier.py      # Category-based posture rules & verifiers
-│   └── pose_detector.py          # MediaPipe pose wrapper
-├── exercises/
-│   └── motion_profiler.py        # Exercise angle state machines & rep counters
 ├── frontend/
 │   ├── public/
 │   ├── src/
+│   │   ├── assets/
 │   │   ├── components/           # Dashboard, WorkoutArea, Analytics, Onboarding
-│   │   ├── config.js             # API & WebSocket URL resolvers
 │   │   ├── App.jsx               # Main application component
 │   │   └── main.jsx              # React entry point
-│   ├── index.html                # MediaPipe WebAssembly CDN scripts
-│   └── package.json
+│   ├── index.html
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── .gitignore
 └── README.md
 ```
 
