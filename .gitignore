@@ -1,0 +1,50 @@
+# Python cache and byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Database files
+*.db
+*.sqlite3
+
+# Runtime uploads and generated reports
+uploads/
+!backend/uploads/.gitkeep
+*.pdf
+
+# Local user profile configuration
+user_profile.json
+backend/user_profile.json
+
+# Frontend build outputs and dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / Editor folders
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
