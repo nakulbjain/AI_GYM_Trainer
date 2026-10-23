@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { 
   Dumbbell, Play, Pause, RefreshCw, X, ShieldAlert, 
   Volume2, VolumeX, Droplet, Flame, Compass, Award,
-  Maximize2, Minimize2
+  Maximize2, Minimize2, Check, Activity, Repeat, Layers
 } from 'lucide-react';
 
 export default function WorkoutArea({ userId, workoutExercises, restDuration, setView, onWorkoutLogged }) {
@@ -520,7 +520,7 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   };
 
   // Helper values for skeletal line rendering
-  const renderBone = (idA, idB, color = "#6366F1") => {
+  const renderBone = (idA, idB, color = "#B7F52A") => {
     const ptA = landmarks.find(lm => lm.id === idA);
     const ptB = landmarks.find(lm => lm.id === idB);
     if (!ptA || !ptB) return null;
@@ -532,9 +532,9 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
         x1={`${ptA.x}%`} y1={`${ptA.y}%`} 
         x2={`${ptB.x}%`} y2={`${ptB.y}%`} 
         stroke={color} 
-        strokeWidth="3" 
+        strokeWidth="3.5" 
         strokeLinecap="round"
-        className="opacity-80"
+        className="opacity-90"
       />
     );
   };
@@ -542,8 +542,8 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   const renderSkeleton = () => {
     if (landmarks.length === 0) return null;
     
-    // Color schemes
-    const activeColor = isVerified ? "#10B981" : "#F43F5E"; // green if verified, red if not
+    // Stitch primary lime if verified, high-visibility danger red if invalid posture
+    const activeColor = isVerified ? "#B7F52A" : "#FF4D4F";
 
     return (
       <svg className="absolute inset-0 w-full h-full pointer-events-none z-20 scale-x-[-1]">
@@ -580,18 +580,12 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
               r="4.5" 
               fill="#FFFFFF" 
               stroke={activeColor}
-              strokeWidth="2"
+              strokeWidth="2.5"
             />
           );
         })}
       </svg>
     );
-  };
-
-  const getStressColorClass = (level) => {
-    if (level === 'High') return 'bg-brand-secondary/10 border-brand-secondary/45 text-brand-secondary font-bold';
-    if (level === 'Medium') return 'bg-brand-primary/10 border-brand-primary/45 text-brand-primary font-bold';
-    return 'bg-brand-accent/10 border-brand-accent/20 text-brand-accent font-semibold';
   };
 
   const formatTime = (secs) => {
@@ -601,44 +595,66 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   };
 
   return (
-    <div className="min-h-screen bg-dark text-white p-4 md:p-8 flex flex-col items-center select-none relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-15%] w-[40vw] h-[40vw] rounded-full bg-brand-primary/5 blur-[120px]"></div>
-      <div className="absolute bottom-[-15%] right-[-15%] w-[45vw] h-[45vw] rounded-full bg-brand-accent/5 blur-[120px]"></div>
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-12 px-4 md:px-8 flex flex-col items-center select-none relative overflow-hidden font-sans">
+      
+      {/* Dynamic Audio Feedback & Diagnostic Trigger Strip */}
+      <div className="w-full max-w-7xl pt-4 pb-3 flex flex-wrap items-center justify-between gap-3 text-[#6F7075] font-mono text-[11px] tracking-wider uppercase border-b border-white/10 mb-4">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#101012] border border-white/10 text-[#B7F52A]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B7F52A] animate-pulse"></span>
+            STREAM: KINETIC-CV-01
+          </span>
+          <span className="hidden sm:inline">ENGINE: POSE-DETECTION-BIO</span>
+          <span className="hidden md:inline">CALIBRATION: STABLE</span>
+        </div>
+        <div className="flex items-center gap-4 text-[#F7F7F5]">
+          <div className="flex items-center gap-1.5 font-mono">
+            <span>PIPELINE: <strong className="text-[#B7F52A]">60 FPS</strong></span>
+          </div>
+          <div className="flex items-center gap-1.5 font-mono">
+            <span>AUDIO: <strong className={voiceEnabled ? "text-[#B7F52A]" : "text-[#6F7075]"}>{voiceEnabled ? 'ACTIVE' : 'MUTED'}</strong></span>
+          </div>
+        </div>
+      </div>
 
-      {/* TOP CONTROLS */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-6 z-10 animate-fade-in-up">
+      {/* TOP CONTROLS & EXERCISE TITLE */}
+      <div className="w-full max-w-7xl flex justify-between items-center mb-4 z-10">
         <div className="flex items-center gap-3">
           <button 
             onClick={handleFinishSession}
-            className="w-10 h-10 rounded-xl bg-dark-border/40 hover:bg-dark-border/60 transition-colors flex items-center justify-center border border-white/5"
+            className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 transition-colors flex items-center justify-center border border-white/10 text-[#F7F7F5]"
+            title="End Session"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
           <div>
-            <h2 className="text-lg md:text-xl font-extrabold capitalize">{currentCleanName.replace(/_/g, ' ')}</h2>
-            <span className="text-[10px] font-bold text-dark-muted tracking-widest uppercase block mt-0.5">Active Exercise</span>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#6F7075]">ACTIVE PROTOCOL</span>
+            </div>
+            <h2 className="text-lg md:text-xl font-bold uppercase font-serif tracking-tight">{currentCleanName.replace(/_/g, ' ')}</h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button 
             onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${
+            className={`w-9 h-9 rounded border flex items-center justify-center transition-all ${
               voiceEnabled 
-                ? 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary' 
-                : 'bg-dark-border/40 border-white/5 text-dark-muted'
+                ? 'bg-[#B7F52A]/10 border-[#B7F52A] text-[#B7F52A]' 
+                : 'bg-[#101012] border-white/10 text-[#6F7075]'
             }`}
+            title={voiceEnabled ? "Mute Coach Audio" : "Enable Coach Audio"}
           >
-            {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+            {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-[#6F7075]" />}
           </button>
 
           <button 
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Full Screen" : "Full Screen Camera"}
-            className="w-10 h-10 rounded-xl bg-dark-border/40 hover:bg-dark-border/60 border border-white/5 text-slate-300 hover:text-white flex items-center justify-center transition-all"
+            className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 border border-white/10 text-[#6F7075] hover:text-[#F7F7F5] flex items-center justify-center transition-all"
           >
-            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           
           <button 
@@ -647,49 +663,49 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
               setIsRunning(nextState);
               if (nextState && !isFullscreen) toggleFullscreen();
             }}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded text-xs font-bold font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 ${
               isRunning 
-                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-md' 
-                : 'bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 active:scale-95'
+                ? 'bg-[#FFB020] text-[#050505] shadow-md' 
+                : 'bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505]'
             }`}
           >
-            {isRunning ? <><Pause className="w-4 h-4" /> Pause session</> : <><Play className="w-4 h-4 text-white fill-current" /> Begin tracking</>}
+            {isRunning ? <><Pause className="w-3.5 h-3.5" /> Pause Tracking</> : <><Play className="w-3.5 h-3.5 fill-current" /> Initialize Camera</>}
           </button>
         </div>
       </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-8 z-10 animate-fade-in-up">
+      {/* MAIN 70/30 DUAL PANEL VIEWPORT GRID */}
+      <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-10 gap-6 z-10">
         
-        {/* LEFT COLUMN: CAMERA MODULE HUD */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* LEFT COLUMN: LIVE VISION FEED (70% on desktop) */}
+        <div className="lg:col-span-7 flex flex-col gap-4">
           <div 
             ref={containerRef}
             className={`transition-all duration-300 ${
               isFullscreen 
                 ? 'fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[99999] bg-black flex items-center justify-center p-0 m-0 overflow-hidden' 
-                : 'relative aspect-video rounded-3xl bg-dark-card border border-white/5 overflow-hidden shadow-2xl flex items-center justify-center'
+                : 'relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/10] rounded-xl bg-[#0A0A0A] border border-white/10 overflow-hidden shadow-2xl flex flex-col justify-between p-4'
             }`}
           >
             
             {currentEx === 'treadmill' ? (
-              <div className="absolute inset-0 bg-dark-card z-40 flex flex-col justify-center items-center text-center p-8">
-                <div className="w-20 h-20 bg-brand-primary/10 border border-brand-primary/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                  <Flame className="w-10 h-10 text-brand-primary" />
+              <div className="absolute inset-0 bg-[#0A0A0A] z-40 flex flex-col justify-center items-center text-center p-8">
+                <div className="w-16 h-16 bg-[#B7F52A]/10 border border-[#B7F52A]/30 rounded-lg flex items-center justify-center mb-6 text-[#B7F52A]">
+                  <Flame className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">TREADMILL SESSION</h3>
-                <p className="text-sm font-semibold text-brand-accent mb-4">{currentCleanName}</p>
-                <div className="bg-dark/50 border border-white/5 rounded-2xl p-4 max-w-md mb-6 space-y-2">
-                  <span className="text-xs text-brand-primary block font-semibold uppercase tracking-wider">Instructions</span>
-                  <p className="text-xs text-dark-muted leading-relaxed">
-                    Set up your physical treadmill according to the target speed and incline settings. Focus on completing your steps and recovery.
+                <h3 className="text-2xl font-bold uppercase font-serif text-[#F7F7F5] mb-2">Treadmill Protocol</h3>
+                <p className="text-sm font-mono text-[#B7F52A] mb-4">{currentCleanName}</p>
+                <div className="bg-[#101012] border border-white/10 rounded-lg p-4 max-w-md mb-6 space-y-1.5">
+                  <span className="text-[10px] font-mono text-[#6F7075] uppercase block tracking-wider">EXECUTION TARGET</span>
+                  <p className="text-xs text-[#6F7075] leading-relaxed">
+                    Set up your physical treadmill according to target speed and incline settings. Focus on heart-rate zone and stride recovery.
                   </p>
                 </div>
                 <button
                   onClick={handleTreadmillComplete}
-                  className="px-6 py-3 bg-brand-primary hover:bg-brand-primary/90 active:scale-95 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-brand-primary/20 uppercase tracking-wider"
+                  className="px-6 py-2.5 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold rounded text-xs uppercase tracking-wider"
                 >
-                  Complete Treadmill Session
+                  Conclude Treadmill Interval
                 </button>
               </div>
             ) : (
@@ -700,8 +716,11 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
                   autoPlay 
                   playsInline 
                   muted 
-                  className="w-full h-full object-cover scale-x-[-1] z-10" // Mirrored camera with object-cover for full container alignment
+                  className="absolute inset-0 w-full h-full object-cover scale-x-[-1] z-10" // Mirrored camera with object-cover for full container alignment
                 />
+
+                {/* High-Contrast Vision Scrim Layer */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-transparent to-[#050505]/80 pointer-events-none z-10" />
 
                 {/* Hidden Frame Grab Canvas */}
                 <canvas ref={canvasRef} width="640" height="480" className="hidden" />
@@ -709,61 +728,107 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
                 {/* Neon Landmark SVG overlay */}
                 {renderSkeleton()}
 
-                {/* Floating Top HUD Metrics Bar (STAGE, REPS, ROM %, SCORE %, ANGLE °) */}
+                {/* Top Floating Translucent HUD Strip */}
                 {isRunning && (
-                  <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-auto">
-                    <div className="flex items-center gap-2.5 bg-[#050508]/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-gold/30 shadow-2xl flex-wrap">
-                      <span className="font-extrabold text-xs text-white capitalize tracking-wide pr-1">{currentCleanName.replace(/_/g, ' ')}</span>
-                      <div className="h-4 w-[1px] bg-white/20"></div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-dark-muted font-bold uppercase tracking-wider">STAGE:</span>
-                        <span className={`text-xs font-black px-2 py-0.5 rounded-md ${
-                          stage === 'UP' ? 'bg-gold/25 text-gold border border-gold/40' : 
-                          stage === 'DOWN' ? 'bg-magenta/25 text-magenta border border-magenta/40' : 
-                          stage === 'LOCKED' ? 'bg-rose-500/30 text-rose-400 border border-rose-500/30' : 'text-slate-400'
-                        }`}>{stage}</span>
+                  <div className="relative z-30 w-full flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#050505]/85 backdrop-blur-md border border-white/10 shadow-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#101012] rounded border border-white/10 text-[#B7F52A]">
+                        <Dumbbell className="w-4 h-4" />
                       </div>
-
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-dark-muted font-bold uppercase tracking-wider">REPS:</span>
-                        <span className="text-sm font-black text-gold">{reps}</span>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-dark-muted font-bold uppercase tracking-wider">ROM:</span>
-                        <span className="text-sm font-black text-magenta">{romPct}%</span>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-dark-muted font-bold uppercase tracking-wider">SCORE:</span>
-                        <span className="text-sm font-black text-gold">{accuracy}%</span>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-dark-muted font-bold uppercase tracking-wider">ANGLE:</span>
-                        <span className="text-sm font-black text-amber-300">{activeAngle}°</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs font-serif uppercase tracking-tight text-[#F7F7F5]">
+                            {currentCleanName.replace(/_/g, ' ')}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] font-mono text-[9px] uppercase">
+                            AI KINEMATICS
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono text-[10px] uppercase text-[#B7F52A] flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#B7F52A] animate-pulse"></span>
+                            PHASE: {stage}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {isFullscreen && (
-                        <button 
-                          onClick={() => setIsRunning(!isRunning)}
-                          className="px-4 py-2 bg-brand-secondary hover:bg-brand-secondary/90 text-white rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-1.5"
-                        >
-                          {isRunning ? <><Pause className="w-4 h-4" /> Pause</> : <><Play className="w-4 h-4" /> Resume</>}
-                        </button>
-                      )}
-
-                      <button
-                        onClick={toggleFullscreen}
-                        className="w-10 h-10 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 text-white flex items-center justify-center hover:bg-black/90 transition-all shadow-lg"
-                        title={isFullscreen ? "Exit Full Screen" : "Full Screen View"}
-                      >
-                        {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-                      </button>
+                    <div className="flex items-center gap-4 sm:gap-6 font-mono">
+                      {/* Reps Metric */}
+                      <div className="flex flex-col text-right">
+                        <span className="text-[9px] uppercase text-[#6F7075]">REPS</span>
+                        <span className="text-xl sm:text-2xl font-black text-[#F7F7F5] leading-none">
+                          {reps}
+                        </span>
+                      </div>
+                      <div className="w-px h-6 bg-white/10"></div>
+                      {/* Live ROM Gauge */}
+                      <div className="flex flex-col text-right">
+                        <span className="text-[9px] uppercase text-[#6F7075]">LIVE ROM</span>
+                        <span className="text-xl sm:text-2xl font-black text-[#B7F52A] leading-none">{romPct}%</span>
+                      </div>
+                      <div className="w-px h-6 bg-white/10"></div>
+                      {/* Form Score */}
+                      <div className="flex flex-col text-right">
+                        <span className="text-[9px] uppercase text-[#6F7075]">FORM</span>
+                        <span className="text-xl sm:text-2xl font-black text-[#F7F7F5] leading-none">{accuracy}%</span>
+                      </div>
+                      <div className="w-px h-6 bg-white/10"></div>
+                      {/* Angle */}
+                      <div className="flex flex-col text-right">
+                        <span className="text-[9px] uppercase text-[#6F7075]">ANGLE</span>
+                        <span className="text-xl sm:text-2xl font-black text-[#FFB020] leading-none">{activeAngle}°</span>
+                      </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Center Crosshair Target Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                  <div className="w-24 h-24 rounded-full border border-dashed border-[#B7F52A]/20 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#B7F52A]/40 shadow-[0_0_8px_rgba(183,245,42,0.8)]"></div>
+                  </div>
+                </div>
+
+                {/* Floating Joint Biometric Angle Callout Badge */}
+                {isRunning && activeAngle > 0 && (
+                  <div className="absolute left-6 bottom-20 z-20 pointer-events-none">
+                    <div className="px-3 py-1.5 rounded bg-[#050505]/90 border border-white/15 text-[#B7F52A] shadow-xl flex items-center gap-2 backdrop-blur-md font-mono">
+                      <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black leading-none text-[#F7F7F5]">{activeAngle}°</span>
+                        <span className="text-[9px] text-[#6F7075] uppercase tracking-wider">JOINT FLEXION</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottom Overlay Guidance Feedback Banner */}
+                {isRunning && (
+                  <div className="relative z-30 w-full flex flex-col gap-1.5 mt-auto">
+                    {(!isVerified || warningMsg) ? (
+                      <div className="w-full px-3 py-2 rounded bg-[#FF4D4F]/90 backdrop-blur-md flex items-center justify-between text-[#050505] shadow-xl">
+                        <div className="flex items-center gap-2 min-w-0 font-mono">
+                          <ShieldAlert className="w-4 h-4 text-[#050505] shrink-0" />
+                          <span className="text-xs font-bold uppercase truncate">
+                            {warningMsg || `POSTURE ERROR: CORRECT KINEMATICS FOR ${currentCleanName.replace(/_/g, ' ')}`}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold uppercase shrink-0">ADJUST FORM</span>
+                      </div>
+                    ) : (
+                      <div className="w-full px-3 py-2 rounded bg-[#050505]/90 backdrop-blur-md border border-white/10 flex items-center justify-between shadow-xl">
+                        <div className="flex items-center gap-2 min-w-0 font-mono">
+                          <div className="w-3.5 h-3.5 rounded bg-[#B7F52A] flex items-center justify-center text-[#050505] shrink-0">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </div>
+                          <span className="text-xs text-[#F7F7F5] uppercase tracking-normal truncate">
+                            OPTIMAL TRAJECTORY DETECTED — MAINTAIN TEMPO
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#B7F52A] uppercase shrink-0">VERIFIED</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -771,123 +836,173 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
 
             {/* Camera off/standby overlay */}
             {!isRunning && (
-              <div className="absolute inset-0 bg-dark-card/90 z-30 flex flex-col justify-center items-center text-center p-6">
-                <Dumbbell className="w-16 h-16 text-brand-primary/30 mb-4 animate-pulse" />
-                <h3 className="text-xl font-bold mb-1">AI Posture System Suspended</h3>
-                <p className="text-xs text-dark-muted max-w-[280px] leading-relaxed">
-                  Click 'Begin tracking' to enable your webcam and start scanning joint loads.
+              <div className="absolute inset-0 bg-[#0A0A0A] z-30 flex flex-col justify-center items-center text-center p-6">
+                <Dumbbell className="w-12 h-12 text-[#6F7075] mb-4" />
+                <h3 className="text-lg font-bold uppercase font-serif text-[#F7F7F5] mb-1">Optical Kinematic Pipeline Inactive</h3>
+                <p className="text-xs text-[#6F7075] max-w-xs leading-relaxed font-sans mb-4">
+                  Initialize camera feed to begin full-body skeletal tracking and biomechanical joint angle computation.
                 </p>
+                <button
+                  onClick={() => setIsRunning(true)}
+                  className="px-5 py-2.5 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded"
+                >
+                  Start Optical Tracking
+                </button>
               </div>
             )}
 
             {/* Rest Timer overlay */}
             {isResting && (
-              <div className="absolute inset-0 bg-dark/95 z-30 flex flex-col justify-center items-center text-center p-6">
-                <Compass className="w-16 h-16 text-brand-primary mb-4 animate-spin" />
-                <h3 className="text-2xl font-black text-brand-primary">REST TIME</h3>
-                <span className="text-5xl font-black tracking-widest block mt-2 text-white">{formatTime(restTimeLeft)}</span>
-                <span className="text-xs text-dark-muted mt-2 uppercase tracking-widest font-bold">Remaining rest</span>
+              <div className="absolute inset-0 bg-[#050505]/95 z-30 flex flex-col justify-center items-center text-center p-6">
+                <Compass className="w-12 h-12 text-[#B7F52A] mb-3 animate-spin" />
+                <span className="text-[10px] font-mono text-[#6F7075] uppercase tracking-widest">INTER-SET REST PERIOD</span>
+                <span className="text-5xl font-black font-mono tracking-widest block mt-2 text-[#B7F52A]">{formatTime(restTimeLeft)}</span>
                 <button
                   onClick={skipRest}
-                  className="mt-6 px-6 py-2.5 bg-brand-accent text-white font-semibold rounded-xl text-xs hover:opacity-90 active:scale-95 transition-all shadow-md shadow-brand-accent/20"
+                  className="mt-6 px-6 py-2 bg-[#101012] border border-white/15 text-[#F7F7F5] hover:border-[#B7F52A] font-bold rounded text-xs uppercase tracking-wider transition-all"
                 >
-                  Skip Rest Timer
+                  Resume Training Protocol
                 </button>
-              </div>
-            )}
-
-            {/* EXERCISE POSTURE CORRECTION BANNER (Photo 5 style) */}
-            {(!isVerified || warningMsg) && isRunning && (
-              <div className="absolute bottom-4 left-4 right-4 bg-brand-secondary/95 backdrop-blur-md border border-brand-secondary/60 p-4 rounded-2xl z-30 flex gap-3 text-white shadow-2xl animate-fade-in-up">
-                <ShieldAlert className="w-6 h-6 flex-shrink-0 mt-0.5 animate-bounce text-white" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-extrabold text-xs tracking-wider uppercase">
-                    {!isVerified ? 'WRONG EXERCISE DETECTED!' : 'POSTURE WARNING'}
-                  </h4>
-                  <p className="text-xs text-white/95 mt-1 font-semibold leading-relaxed">
-                    {warningMsg || `Position incorrect for ${currentCleanName.replace(/_/g, ' ')}. Please perform correct posture movement.`}
-                  </p>
-                </div>
               </div>
             )}
 
             {/* Water reminder notification bubble */}
             {showWaterReminder && (
-              <div className="absolute top-4 left-4 bg-brand-primary border border-brand-primary/40 p-4 rounded-2xl z-30 shadow-xl max-w-[260px] animate-fade-in-up flex gap-3">
-                <Droplet className="w-5 h-5 text-white flex-shrink-0 animate-bounce" />
+              <div className="absolute top-4 left-4 bg-[#101012] border border-[#B7F52A] p-4 rounded z-40 shadow-2xl max-w-xs flex gap-3">
+                <Droplet className="w-5 h-5 text-[#B7F52A] flex-shrink-0" />
                 <div>
-                  <h4 className="font-bold text-xs">Hydration Alert</h4>
-                  <p className="text-[10px] text-white/90 leading-relaxed mt-0.5">You have trained hard. Drink 250ml of water to maintain form stability.</p>
+                  <h4 className="font-bold text-xs uppercase font-serif text-[#F7F7F5]">Hydration Advisory</h4>
+                  <p className="text-[11px] text-[#6F7075] leading-relaxed mt-1">High metabolic exertion. Ingest 250ml water to maintain neuromuscular efficiency.</p>
                   <button 
                     onClick={() => setShowWaterReminder(false)}
-                    className="mt-2 text-[9px] font-bold underline uppercase"
+                    className="mt-2 text-[10px] font-mono text-[#B7F52A] hover:underline uppercase"
                   >
-                    Dismiss
+                    [ Acknowledge ]
                   </button>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Quick Kinematic Form Breakdown Bar (Stitch style) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3 bg-[#101012] border border-white/10 rounded flex flex-col font-mono">
+              <span className="text-[10px] text-[#6F7075] uppercase">JOINT ACCURACY</span>
+              <span className="text-sm text-[#F7F7F5] font-bold mt-1 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${accuracy >= 80 ? 'bg-[#B7F52A]' : 'bg-[#FF4D4F]'}`}></span>
+                {accuracy}%
+              </span>
+              <span className="text-[10px] text-[#6F7075]">Kinematic tolerance</span>
+            </div>
+            <div className="p-3 bg-[#101012] border border-white/10 rounded flex flex-col font-mono">
+              <span className="text-[10px] text-[#6F7075] uppercase">RANGE OF MOTION</span>
+              <span className="text-sm text-[#F7F7F5] font-bold mt-1 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
+                {romPct}% ROM
+              </span>
+              <span className="text-[10px] text-[#6F7075]">Full extension curve</span>
+            </div>
+            <div className="p-3 bg-[#101012] border border-white/10 rounded flex flex-col font-mono">
+              <span className="text-[10px] text-[#6F7075] uppercase">CNS FATIGUE</span>
+              <span className="text-sm text-[#F7F7F5] font-bold mt-1 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${fatigue > 60 ? 'bg-[#FFB020]' : 'bg-[#B7F52A]'}`}></span>
+                {fatigue}%
+              </span>
+              <span className="text-[10px] text-[#6F7075]">Velocity drift</span>
+            </div>
+            <div className="p-3 bg-[#101012] border border-white/10 rounded flex flex-col font-mono">
+              <span className="text-[10px] text-[#6F7075] uppercase">LUMBAR / JOINT RISK</span>
+              <span className="text-sm text-[#F7F7F5] font-bold mt-1 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${riskScore === 'Low' ? 'bg-[#B7F52A]' : 'bg-[#FF4D4F]'}`}></span>
+                {riskScore.toUpperCase()}
+              </span>
+              <span className="text-[10px] text-[#6F7075]">Shear load rating</span>
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: ANALYTICS HUD */}
-        <div className="space-y-6">
+        {/* RIGHT COLUMN: LIVE PERFORMANCE TELEMETRY STREAM (30% on desktop) */}
+        <div className="lg:col-span-3 flex flex-col gap-4">
           
-          {/* HUD MAIN STATS CARD */}
-          <div className="glass p-6 rounded-3xl border border-white/5 space-y-6">
-            <span className="text-xs font-bold text-brand-primary tracking-widest uppercase block mb-1">Live Metrics</span>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 flex flex-col justify-between h-[100px]">
-                <span className="text-xs font-bold text-dark-muted uppercase">Rep Counter</span>
-                <span className="text-3xl font-black text-brand-accent">{reps}</span>
+          {/* Panel Header */}
+          <div className="p-3 bg-[#101012] border border-white/10 rounded flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#B7F52A] animate-pulse"></div>
+              <span className="font-bold font-serif uppercase text-xs tracking-wider text-[#F7F7F5]">NEURAL TELEMETRY</span>
+            </div>
+            <span className="font-mono text-[10px] uppercase text-[#6F7075]">SESSION LIVE</span>
+          </div>
+
+          {/* Key Metric Stack */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* REP COUNTER */}
+            <div className="p-4 bg-[#101012] border border-white/10 rounded flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-[#6F7075] uppercase">COMPLETED REPS</span>
+                <Repeat className="w-3.5 h-3.5 text-[#B7F52A]" />
               </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 flex flex-col justify-between h-[100px]">
-                <span className="text-xs font-bold text-dark-muted uppercase">Active Set</span>
-                <span className="text-3xl font-black text-brand-primary">{sets}</span>
+              <div className="my-2">
+                <span className="text-3xl font-black font-mono text-[#F7F7F5] leading-none">{reps}</span>
               </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 flex flex-col justify-between h-[100px]">
-                <span className="text-xs font-bold text-dark-muted uppercase">Joint Angle</span>
-                <span className="text-3xl font-black text-brand-primary">{activeAngle}°</span>
-              </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 flex flex-col justify-between h-[100px]">
-                <span className="text-xs font-bold text-dark-muted uppercase">Form Score</span>
-                <span className="text-3xl font-black text-brand-primary">{accuracy}%</span>
+              <div className="w-full bg-[#0A0A0A] h-1 rounded overflow-hidden">
+                <div className="bg-[#B7F52A] h-full" style={{ width: `${Math.min(100, (reps % 12) * 8.33)}%` }}></div>
               </div>
             </div>
 
-            {/* Fatigue circular bar */}
-            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-sm">Physical Fatigue</h4>
-                <p className="text-[10px] text-dark-muted mt-0.5 leading-relaxed max-w-[180px]">
-                  Estimated using joint tremble, motion speed, and range degradation.
-                </p>
+            {/* ACTIVE SET */}
+            <div className="p-4 bg-[#101012] border border-white/10 rounded flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono text-[#6F7075] uppercase">ACTIVE SET</span>
+                <Layers className="w-3.5 h-3.5 text-[#B7F52A]" />
               </div>
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.05)" strokeWidth="4" fill="transparent" />
-                  <circle 
-                    cx="32" cy="32" r="28" 
-                    stroke={fatigue >= 80 ? "#F43F5E" : (fatigue >= 55 ? "#F59E0B" : "#6366F1")} 
-                    strokeWidth="4" 
-                    fill="transparent" 
-                    strokeDasharray={176}
-                    strokeDashoffset={176 - (176 * fatigue) / 100}
-                    className="transition-all duration-300"
-                  />
-                </svg>
-                <span className="absolute text-xs font-black">{fatigue}%</span>
+              <div className="my-2">
+                <span className="text-3xl font-black font-mono text-[#F7F7F5] leading-none">SET {sets}</span>
               </div>
+              <span className="text-[10px] font-mono text-[#6F7075]">Target: 3 Sets</span>
+            </div>
+
+            {/* JOINT ANGLE */}
+            <div className="p-4 bg-[#101012] border border-white/10 rounded flex flex-col justify-between">
+              <span className="text-[10px] font-mono text-[#6F7075] uppercase">JOINT ANGLE</span>
+              <div className="my-2">
+                <span className="text-3xl font-black font-mono text-[#FFB020] leading-none">{activeAngle}°</span>
+              </div>
+              <span className="text-[10px] font-mono text-[#6F7075]">Biomechanical flexion</span>
+            </div>
+
+            {/* FORM ACCURACY */}
+            <div className="p-4 bg-[#101012] border border-white/10 rounded flex flex-col justify-between">
+              <span className="text-[10px] font-mono text-[#6F7075] uppercase">FORM SCORE</span>
+              <div className="my-2">
+                <span className="text-3xl font-black font-mono text-[#B7F52A] leading-none">{accuracy}%</span>
+              </div>
+              <span className="text-[10px] font-mono text-[#6F7075]">Optical verification</span>
             </div>
           </div>
 
-          {/* NAVIGATION */}
+          {/* FATIGUE ACCUMULATOR CARD */}
+          <div className="p-4 bg-[#101012] border border-white/10 rounded space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-[#6F7075] uppercase">PHYSIOLOGICAL FATIGUE</span>
+              <span className="text-xs font-mono font-bold text-[#F7F7F5]">{fatigue}%</span>
+            </div>
+            <div className="w-full bg-[#0A0A0A] h-1.5 rounded overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-300 ${fatigue > 60 ? 'bg-[#FF4D4F]' : (fatigue > 35 ? 'bg-[#FFB020]' : 'bg-[#B7F52A]')}`}
+                style={{ width: `${fatigue}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-[#6F7075] font-sans leading-relaxed">
+              Derived from kinematic cadence decay, joint micro-oscillations, and range-of-motion velocity.
+            </p>
+          </div>
+
+          {/* NEXT EXERCISE / FINISH PROTOCOL BUTTON */}
           <button
             onClick={nextExercise}
-            className="w-full py-4 bg-brand-primary hover:bg-brand-primary/95 active:scale-95 transition-all text-white font-bold rounded-2xl shadow-lg shadow-brand-primary/20 flex items-center justify-center gap-1 text-sm"
+            className="w-full py-3.5 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded transition-colors flex items-center justify-center gap-1.5 mt-auto"
           >
-            {exerciseIndex < workoutExercises.length - 1 ? 'Next Exercise' : 'Finish Session'}
+            {exerciseIndex < workoutExercises.length - 1 ? 'Advance to Next Protocol' : 'Conclude Session Dossier'}
           </button>
 
         </div>
@@ -896,66 +1011,65 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
 
       {/* --- SESSION SUMMARY MODAL --- */}
       {showSummary && summaryData && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg glass-bright p-8 rounded-3xl border border-white/10 animate-fade-in-up relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-[#101012] border border-white/15 p-6 rounded-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
-            <div className="text-center flex flex-col items-center mb-6">
-              <div className="w-14 h-14 bg-brand-accent/10 border border-brand-accent/20 text-brand-accent rounded-2xl flex items-center justify-center mb-4">
-                <Award className="w-7 h-7" />
+            <div className="text-center flex flex-col items-center mb-6 border-b border-white/10 pb-5">
+              <div className="w-12 h-12 bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] rounded flex items-center justify-center mb-3">
+                <Award className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl font-black tracking-tight">Workout Complete!</h3>
-              <p className="text-xs text-dark-muted mt-1 uppercase tracking-widest font-bold">Performance Breakdown</p>
+              <span className="text-[10px] font-mono text-[#B7F52A] uppercase tracking-widest">SESSION COMPLETE</span>
+              <h3 className="text-2xl font-bold uppercase font-serif tracking-tight text-[#F7F7F5] mt-1">Biomechanical Telemetry Dossier</h3>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 text-center">
-                <span className="text-xs text-dark-muted font-semibold uppercase block mb-1">Duration</span>
-                <span className="text-xl font-black text-brand-primary">{summaryData.duration}m</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 font-mono">
+              <div className="bg-[#0A0A0A] border border-white/10 rounded p-3 text-center">
+                <span className="text-[10px] text-[#6F7075] uppercase block mb-1">Duration</span>
+                <span className="text-lg font-black text-[#F7F7F5]">{summaryData.duration}m</span>
               </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 text-center">
-                <span className="text-xs text-dark-muted font-semibold uppercase block mb-1">Calories</span>
-                <span className="text-xl font-black text-brand-secondary">{summaryData.calories_burned} kcal</span>
+              <div className="bg-[#0A0A0A] border border-white/10 rounded p-3 text-center">
+                <span className="text-[10px] text-[#6F7075] uppercase block mb-1">Metabolic</span>
+                <span className="text-lg font-black text-[#FFB020]">{summaryData.calories_burned} kcal</span>
               </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 text-center">
-                <span className="text-xs text-dark-muted font-semibold uppercase block mb-1">Accuracy</span>
-                <span className="text-xl font-black text-brand-accent">{summaryData.accuracy}%</span>
+              <div className="bg-[#0A0A0A] border border-white/10 rounded p-3 text-center">
+                <span className="text-[10px] text-[#6F7075] uppercase block mb-1">Form Index</span>
+                <span className="text-lg font-black text-[#B7F52A]">{summaryData.accuracy}%</span>
               </div>
-              <div className="bg-dark-border/20 border border-white/5 rounded-2xl p-4 text-center">
-                <span className="text-xs text-dark-muted font-semibold uppercase block mb-1">Total Reps</span>
-                <span className="text-xl font-black text-white">{summaryData.reps}</span>
+              <div className="bg-[#0A0A0A] border border-white/10 rounded p-3 text-center">
+                <span className="text-[10px] text-[#6F7075] uppercase block mb-1">Total Reps</span>
+                <span className="text-lg font-black text-[#F7F7F5]">{summaryData.reps}</span>
               </div>
             </div>
 
-            <div className="space-y-4 mb-6">
-              {/* Correct/Incorrect breakdown */}
-              <div className="flex justify-between items-center text-xs pb-3 border-b border-white/5">
-                <span className="text-dark-muted font-medium">Form-Verified Correct Reps</span>
-                <span className="font-extrabold text-brand-accent text-sm">{summaryData.correct_reps}</span>
+            <div className="space-y-3 mb-6 text-xs font-mono">
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-[#6F7075]">VERIFIED KINEMATIC REPS</span>
+                <span className="font-bold text-[#B7F52A]">{summaryData.correct_reps}</span>
               </div>
-              <div className="flex justify-between items-center text-xs pb-3 border-b border-white/5">
-                <span className="text-dark-muted font-medium">Wrong Posture Reps (Locked)</span>
-                <span className="font-extrabold text-brand-secondary text-sm">{summaryData.wrong_reps}</span>
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-[#6F7075]">POSTURE ANOMALIES / LOCKED</span>
+                <span className="font-bold text-[#FF4D4F]">{summaryData.wrong_reps}</span>
               </div>
-              <div className="flex justify-between items-center text-xs pb-3 border-b border-white/5">
-                <span className="text-dark-muted font-medium">Average Fatigue Rating</span>
-                <span className="font-extrabold text-brand-primary text-sm">{summaryData.avg_fatigue}%</span>
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-[#6F7075]">PEAK FATIGUE RATING</span>
+                <span className="font-bold text-[#FFB020]">{summaryData.avg_fatigue}%</span>
               </div>
             </div>
 
             {/* Coach's suggestions */}
-            <div className="bg-brand-primary/5 border border-brand-primary/20 p-5 rounded-2xl mb-8 space-y-2 text-xs leading-relaxed">
-              <h4 className="font-bold text-sm text-brand-primary">Coach Recommendations</h4>
-              <p>• <b>Posture correction:</b> {summaryData.accuracy >= 85 ? 'Excellent squat/press depth. Keep your current tempo.' : 'Watch out for knees caving. Push your knees slightly outward.'}</p>
-              <p>• <b>Safety Advice:</b> {summaryData.risk_score === 'High' ? 'Avoid high loading. Lower your weights by 10% next session to reduce AC joint shear.' : 'Low joint stress registered. Ready for progressive load.'}</p>
+            <div className="bg-[#0A0A0A] border border-white/10 p-4 rounded mb-6 space-y-1.5 text-xs font-sans text-[#F7F7F5] leading-relaxed">
+              <span className="text-[10px] font-mono text-[#B7F52A] uppercase block">AI POSTURE ADVISORY</span>
+              <p>• <b>Biomechanics:</b> {summaryData.accuracy >= 85 ? 'Depth and hip hinge alignment within gold tolerances. Tempo sustained.' : 'Occasional knee valgus detected. Concentrate on lateral glute stability.'}</p>
+              <p>• <b>Recovery:</b> {summaryData.risk_score === 'High' ? 'Elevated joint shear recorded. Recommend 48 hours recovery before re-loading.' : 'Joint integrity preserved. Normal progressive overload authorized.'}</p>
             </div>
 
             {/* Action buttons */}
             <button
               onClick={submitWorkoutLog}
               disabled={savingLog}
-              className="w-full py-4 bg-brand-primary hover:bg-brand-primary/95 active:scale-95 transition-all text-white font-bold rounded-2xl text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-brand-primary/20"
+              className="w-full py-3 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded transition-colors flex items-center justify-center"
             >
-              {savingLog ? 'Saving session to database...' : 'Save & Close Session'}
+              {savingLog ? 'Writing to Biometric Database...' : 'Commit Session to Log'}
             </button>
           </div>
         </div>

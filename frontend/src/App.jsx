@@ -212,52 +212,55 @@ export default function App() {
   const renderSidebar = () => {
     const navItems = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'select-workout', label: 'Workout library', icon: Dumbbell },
+      { id: 'select-workout', label: 'Workout Library', icon: Dumbbell },
       { id: 'analytics', label: 'Performance Analytics', icon: History },
-      { id: 'photos', label: 'Progress', icon: Image },
-      { id: 'profile', label: 'Profile', icon: User },
+      { id: 'photos', label: 'Progress Log', icon: Image },
+      { id: 'profile', label: 'Athlete Profile', icon: User },
     ];
 
     return (
-      <div className={`w-64 bg-[#08080E] border-r border-gold/15 flex flex-col h-screen sticky top-0 flex-shrink-0 select-none z-30 transition-all duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full absolute md:relative md:w-0 overflow-hidden border-none'}`}>
-        {/* Branding header */}
-        <div className="p-6 border-b border-white/5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/25 flex items-center justify-center text-gold shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              <Activity className="w-5 h-5 animate-pulse text-gold" />
+      <aside className={`w-64 bg-[#0A0A0A] border-r border-white/10 flex flex-col h-screen sticky top-0 flex-shrink-0 select-none z-30 transition-all duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full absolute md:relative md:w-0 overflow-hidden border-none'}`}>
+        {/* Branding Header */}
+        <div className="p-5 border-b border-white/10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.25)]">
+              <Activity className="w-5 h-5 text-[#B7F52A]" />
             </div>
-            <span className="font-extrabold tracking-tight neon-gradient-text text-lg">AI Gym Trainer</span>
+            <div>
+              <span className="font-display font-black tracking-tight text-white text-base block leading-tight">AI GYM TRAINER</span>
+              <span className="text-[10px] font-bold text-[#6F7075] tracking-widest uppercase block">PRO ATHLETIC ENGINE</span>
+            </div>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-gold/15 flex items-center justify-center text-dark-muted hover:text-gold transition-colors"
+            className="w-8 h-8 rounded-[6px] bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-[#6F7075] hover:text-white transition-colors"
             title="Collapse Sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
 
-        {/* User Card */}
+        {/* Athlete Profile Badge */}
         <div 
           onClick={() => setView('profile')}
-          className="p-4 mx-4 my-6 bg-dark-card border border-gold/15 hover:border-red-500/40 rounded-2xl flex items-center gap-3 shadow-lg shadow-black/60 cursor-pointer group transition-all"
+          className="p-3.5 mx-3 my-4 bg-[#101012] border border-white/10 hover:border-[#B7F52A]/40 rounded-[8px] flex items-center gap-3 cursor-pointer group transition-all"
           title="View & Edit Profile"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-500 flex items-center justify-center font-black text-sm text-black uppercase flex-shrink-0 shadow-md shadow-gold/20 overflow-hidden relative">
+          <div className="w-9 h-9 rounded-[6px] bg-[#151517] border border-white/10 flex items-center justify-center font-display font-black text-xs text-[#B7F52A] uppercase flex-shrink-0 overflow-hidden">
             {userAvatar ? (
-              <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-xl" />
+              <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-[6px]" />
             ) : (
-              userName ? userName.substring(0, 2) : 'AI'
+              userName ? userName.substring(0, 2).toUpperCase() : 'AI'
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="font-extrabold text-white text-sm block truncate group-hover:text-gold transition-colors">{userName || 'User'}</span>
-            <span className="text-[10px] font-black text-red-500 tracking-wider block mt-0.5 uppercase truncate">{userGoal}</span>
+            <span className="font-display font-bold text-white text-xs block truncate group-hover:text-[#B7F52A] transition-colors">{userName || 'Athlete'}</span>
+            <span className="text-[9px] font-black text-[#B7F52A] tracking-wider block uppercase truncate">{userGoal}</span>
           </div>
         </div>
 
-        {/* Nav list */}
-        <div className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+        {/* Navigation List */}
+        <div className="flex-1 px-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = view === item.id;
@@ -265,66 +268,52 @@ export default function App() {
               <button
                 key={item.id}
                 onClick={() => setView(item.id)}
-                className={`w-full px-4 py-3.5 rounded-xl text-left text-sm font-semibold transition-all flex items-center gap-3 ${
+                className={`w-full px-3.5 py-3 rounded-[6px] text-left text-xs font-semibold tracking-wide transition-all flex items-center gap-3 ${
                   isActive 
-                    ? 'bg-gold/15 text-gold border border-gold/40 shadow-lg shadow-gold/10 font-bold' 
-                    : 'text-dark-muted border border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
+                    ? 'bg-[#B7F52A]/10 text-[#B7F52A] border border-[#B7F52A]/40 font-bold shadow-[0_0_15px_rgba(183,245,42,0.15)]' 
+                    : 'text-[#6F7075] border border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-gold' : 'text-dark-muted'}`} />
-                {item.label}
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#B7F52A]' : 'text-[#6F7075]'}`} />
+                <span className="font-display font-bold">{item.label}</span>
               </button>
             );
           })}
 
-          {/* Activity Trackers inside Sidebar */}
+          {/* Daily Protocol Progress Module inside Sidebar */}
           {dashboardData && (
-            <div className="mt-6 pt-4 border-t border-white/5 space-y-3 pb-4">
-              <span className="text-[10px] font-bold text-dark-muted tracking-widest uppercase block mb-1">Daily Progress</span>
+            <div className="mt-5 pt-4 border-t border-white/10 space-y-2 pb-3">
+              <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Session Streak</span>
 
-              {/* Consistency Tracker (Futuristic Circular Progress Ring) */}
-              <div className="bg-dark-card border border-gold/20 rounded-2xl p-4 flex items-center gap-4 hover:border-gold/50 transition-all duration-300 futuristic-glow-gold relative overflow-hidden group">
-                <div className="absolute -inset-full bg-[radial-gradient(circle,rgba(245,158,11,0.06),transparent)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                {/* SVG Progress Ring */}
-                <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
+              <div className="bg-[#101012] border border-white/10 rounded-[8px] p-3 flex items-center gap-3 hover:border-[#B7F52A]/30 transition-all">
+                <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
                   <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                    <circle cx="20" cy="20" r="16" className="stroke-white/5 fill-transparent" strokeWidth="2.5" />
                     <circle
-                      cx="24"
-                      cy="24"
-                      r="19"
-                      className="stroke-white/5 fill-transparent"
-                      strokeWidth="3"
-                    />
-                    <circle
-                      cx="24"
-                      cy="24"
-                      r="19"
-                      className="stroke-gold fill-transparent progress-ring-circle"
-                      strokeWidth="3"
-                      strokeDasharray={2 * Math.PI * 19}
-                      strokeDashoffset={2 * Math.PI * 19 - (dashboardData.workout_completion / 100) * (2 * Math.PI * 19)}
+                      cx="20" cy="20" r="16"
+                      className="stroke-[#B7F52A] fill-transparent"
+                      strokeWidth="2.5"
+                      strokeDasharray={2 * Math.PI * 16}
+                      strokeDashoffset={2 * Math.PI * 16 - (Math.min(100, dashboardData.workout_completion || 0) / 100) * (2 * Math.PI * 16)}
                       strokeLinecap="round"
-                      style={{ filter: 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.6))' }}
                     />
                   </svg>
-                  <Trophy className="w-4 h-4 text-gold relative z-10 animate-pulse" />
+                  <Trophy className="w-3.5 h-3.5 text-[#B7F52A] relative z-10" />
                 </div>
                 
-                {/* Text and Actions */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start gap-1">
-                    <span className="text-xs font-bold text-slate-300">Streak</span>
+                    <span className="text-[11px] font-bold text-white">{dashboardData.workout_streak || 0} Days Active</span>
                     {dashboardData.completed_today && dashboardData.completed_today.length > 0 && (
                       <button 
                         onClick={() => setShowWorkoutsModal(true)}
-                        className="px-1.5 py-0.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 hover:scale-105 active:scale-95 transition-all text-red-500 text-[8px] font-bold tracking-widest uppercase rounded-md"
+                        className="px-1.5 py-0.5 bg-[#B7F52A]/10 hover:bg-[#B7F52A]/20 border border-[#B7F52A]/30 text-[#B7F52A] text-[8px] font-display font-black tracking-widest uppercase rounded-[4px]"
                       >
-                        View
+                        LOGS
                       </button>
                     )}
                   </div>
-                  <span className="text-sm font-black text-white block mt-1">{dashboardData.workout_streak} <span className="text-[10px] text-dark-muted font-bold">Days</span></span>
-                  <span className="text-[9px] font-bold text-gold block mt-0.5">{dashboardData.workout_completion}% Completed</span>
+                  <span className="text-[9px] font-mono text-[#6F7075] block mt-0.5">{dashboardData.workout_completion || 0}% Target Met</span>
                 </div>
               </div>
             </div>
@@ -332,43 +321,43 @@ export default function App() {
         </div>
 
         {/* Logout at bottom */}
-        <div className="p-4 border-t border-white/5">
+        <div className="p-3 border-t border-white/10">
           <button
             onClick={handleLogout}
-            className="w-full px-4 py-3.5 rounded-xl text-left text-sm font-semibold text-red-500 hover:bg-red-500/10 transition-all flex items-center gap-3 border border-transparent hover:border-red-500/20"
+            className="w-full px-3.5 py-2.5 rounded-[6px] text-left text-xs font-display font-bold text-[#FF4D4F] hover:bg-[#FF4D4F]/10 transition-all flex items-center gap-2.5 border border-transparent hover:border-[#FF4D4F]/30"
           >
-            <LogOut className="w-4 h-4 text-red-500" />
-            Logout
+            <LogOut className="w-4 h-4 text-[#FF4D4F]" />
+            DISCONNECT SESSION
           </button>
         </div>
-      </div>
+      </aside>
     );
   };
 
   if (view === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark text-white">
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#F7F7F5]">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-semibold tracking-wider text-dark-muted">SYNCHRONIZING APP STATE...</p>
+          <div className="w-10 h-10 border-2 border-[#B7F52A] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xs font-display font-bold tracking-widest text-[#6F7075] uppercase">INITIALIZING KINEMATIC ENGINE...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white flex flex-col md:flex-row relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] flex flex-col md:flex-row relative overflow-x-hidden selection:bg-[#B7F52A] selection:text-[#050505]">
       {showSidebar && renderSidebar()}
 
-      <div className={`flex-1 min-w-0 relative ${showSidebar && !isSidebarOpen ? 'pl-20 md:pl-24' : ''} transition-all duration-300`}>
+      <div className={`flex-1 min-w-0 relative ${showSidebar && !isSidebarOpen ? 'pl-16 md:pl-20' : ''} transition-all duration-300`}>
         {/* Expand button visible only when sidebar is hidden */}
         {showSidebar && !isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="absolute top-8 left-8 z-40 w-10 h-10 rounded-xl bg-[#080B11] border border-white/10 flex items-center justify-center text-dark-muted hover:text-white hover:border-brand-primary/40 shadow-lg shadow-black/40 transition-all duration-200 hover:scale-105 active:scale-95 animate-fade-in"
+            className="absolute top-6 left-6 z-40 w-9 h-9 rounded-[6px] bg-[#101012] border border-white/15 flex items-center justify-center text-[#6F7075] hover:text-white hover:border-[#B7F52A]/50 shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
             title="Expand Sidebar"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4 h-4" />
           </button>
         )}
         {view === 'onboarding' && (

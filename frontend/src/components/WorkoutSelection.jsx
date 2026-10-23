@@ -1,9 +1,11 @@
+// frontend/src/components/WorkoutSelection.jsx
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Dumbbell, Play, Sparkles, Layers } from 'lucide-react';
+import { ChevronLeft, Dumbbell, Play, Sparkles, Layers, Activity, Target, ShieldCheck, Flame } from 'lucide-react';
 
 export default function WorkoutSelection({ userId, workoutExercises, setView, onSelectExercise }) {
   const [exercisesData, setExercisesData] = useState(null);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,10 +27,10 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark text-white">
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#F7F7F5]">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-semibold tracking-wider text-dark-muted">FETCHING TRAINING REGIMES...</p>
+          <div className="w-10 h-10 border-2 border-[#B7F52A] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xs font-display font-bold tracking-widest text-[#6F7075] uppercase">LOADING PROTOCOL LIBRARY...</p>
         </div>
       </div>
     );
@@ -36,14 +38,14 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark text-white px-4">
-        <div className="glass p-8 rounded-3xl text-center max-w-md border border-brand-secondary/20">
-          <p className="text-sm text-brand-secondary mb-6">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#F7F7F5] px-4">
+        <div className="bg-[#101012] border border-[#FF4D4F]/30 p-8 rounded-[10px] text-center max-w-md">
+          <p className="text-xs font-display font-bold text-[#FF4D4F] mb-6 tracking-wide">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-brand-primary hover:bg-brand-primary/90 transition-colors font-semibold rounded-xl text-sm"
+            className="px-5 py-2.5 bg-[#B7F52A] text-[#050505] font-display font-bold rounded-[6px] text-xs uppercase tracking-wider"
           >
-            Retry
+            Retry Connection
           </button>
         </div>
       </div>
@@ -59,78 +61,110 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
     return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   };
 
-  const getMuscleIcon = (muscle) => {
-    return <Dumbbell className="w-5 h-5 text-gold" />;
-  };
+  const muscleGroups = Object.keys(exercisesData || {});
 
   return (
-    <div className="min-h-screen bg-dark text-white pb-16 px-4 md:px-8 relative overflow-hidden select-none">
-      {/* Background Glows */}
-      <div className="absolute top-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gold/5 blur-[150px]"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-magenta/5 blur-[150px]"></div>
-
-      <div className="max-w-6xl mx-auto pt-8 space-y-8 relative z-10 animate-fade-in-up">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-4 md:px-8 relative select-none">
+      <div className="max-w-7xl mx-auto pt-8 space-y-8 relative z-10 animate-fade-in-up">
+        
         {/* HEADER BAR */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             {selectedMuscle && (
               <button 
                 onClick={() => setSelectedMuscle(null)}
-                className="w-10 h-10 rounded-xl bg-dark-card hover:bg-gold/10 border border-gold/20 flex items-center justify-center transition-colors text-gold"
+                className="w-9 h-9 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-[#B7F52A] transition-colors"
+                title="Back to All Categories"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                {selectedMuscle ? `${cleanMuscleName(selectedMuscle)} Exercises` : 'Select Target Muscle'}
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-[#B7F52A] shadow-[0_0_8px_rgba(183,245,42,0.8)]"></span>
+                <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase">
+                  KINEMATIC PROTOCOLS LAB
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-white uppercase">
+                {selectedMuscle ? `${cleanMuscleName(selectedMuscle)} Protocols` : 'Workout Library & Protocols'}
               </h1>
-              <p className="text-dark-muted text-xs md:text-sm tracking-wide mt-1">
-                {selectedMuscle 
-                  ? 'Choose an exercise to start real-time computer vision posture analysis.'
-                  : 'Select a muscle group below or choose today\'s planned routine.'}
-              </p>
             </div>
           </div>
           
           <button 
             onClick={() => setView('dashboard')}
-            className="px-4 py-2.5 bg-dark-card border border-gold/20 hover:border-gold/50 transition-all font-semibold rounded-xl text-xs flex items-center gap-1.5 text-gold"
+            className="px-4 py-2.5 bg-[#101012] border border-white/15 hover:border-white/30 text-white font-display font-bold rounded-[6px] text-xs flex items-center gap-2 self-start md:self-auto transition-all uppercase tracking-wider"
           >
-            Back to Dashboard
+            ← Return to Dashboard
           </button>
         </div>
 
-        {/* TODAY'S PLAN SECTION */}
+        {/* TACTICAL CATEGORY CHIPS */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button
+            onClick={() => setSelectedMuscle(null)}
+            className={`px-3.5 py-1.5 rounded-[4px] text-xs font-display font-bold uppercase tracking-wider whitespace-nowrap transition-all border ${
+              selectedMuscle === null
+                ? 'bg-[#B7F52A] text-[#050505] border-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.3)]'
+                : 'bg-[#101012] text-[#6F7075] border-white/10 hover:text-white hover:border-white/20'
+            }`}
+          >
+            All Protocols ({Object.values(exercisesData || {}).reduce((acc, m) => acc + Object.keys(m).length, 0)})
+          </button>
+          {muscleGroups.map((muscle) => {
+            const count = Object.keys(exercisesData[muscle] || {}).length;
+            const isSelected = selectedMuscle === muscle;
+            return (
+              <button
+                key={muscle}
+                onClick={() => setSelectedMuscle(muscle)}
+                className={`px-3.5 py-1.5 rounded-[4px] text-xs font-display font-bold uppercase tracking-wider whitespace-nowrap transition-all border ${
+                  isSelected
+                    ? 'bg-[#B7F52A] text-[#050505] border-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.3)]'
+                    : 'bg-[#101012] text-[#6F7075] border-white/10 hover:text-white hover:border-white/20'
+                }`}
+              >
+                {cleanMuscleName(muscle)} ({count})
+              </button>
+            );
+          })}
+        </div>
+
+        {/* TODAY'S SCHEDULED SESSION (If not filtering by specific muscle) */}
         {!selectedMuscle && workoutExercises && workoutExercises.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-xs font-bold text-gold tracking-widest uppercase flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-gold animate-pulse" />
-              Today's Scheduled Regime
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-display font-black text-[#B7F52A] tracking-widest uppercase flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#B7F52A]" />
+                Today's Target Routine
+              </h2>
+              <span className="text-[10px] font-mono text-[#6F7075]">{workoutExercises.length} Movements Scheduled</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {workoutExercises.map((ex, idx) => {
                 const exKey = ex[0];
                 const cleanName = ex[1] || formatExerciseName(exKey);
                 return (
                   <div 
                     key={idx} 
-                    className="futuristic-card p-5 rounded-3xl border border-gold/15 hover:border-gold/40 transition-all duration-300 flex items-center justify-between group"
+                    className="bg-[#101012] border border-[#B7F52A]/30 p-4 rounded-[8px] flex items-center justify-between hover:border-[#B7F52A] transition-all group"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gold/15 border border-gold/30 text-gold font-extrabold rounded-2xl flex items-center justify-center text-sm">
-                        {idx + 1}
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-[4px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] font-display font-black text-xs flex items-center justify-center">
+                        {String(idx + 1).padStart(2, '0')}
                       </div>
                       <div>
-                        <span className="font-extrabold text-sm block capitalize text-white">{cleanName}</span>
-                        <span className="text-[10px] text-magenta font-bold tracking-widest uppercase block mt-0.5">Today's Target</span>
+                        <span className="font-display font-bold text-sm block capitalize text-white group-hover:text-[#B7F52A] transition-colors">{cleanName}</span>
+                        <span className="text-[9px] font-mono text-[#6F7075] uppercase block">AI Pose-Tracked</span>
                       </div>
                     </div>
                     <button
                       onClick={() => onSelectExercise(exKey, cleanName)}
-                      className="px-4 py-2 neon-btn-gold text-black rounded-xl text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                      className="px-3 py-1.5 bg-[#B7F52A] text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[4px] flex items-center gap-1.5 hover:bg-[#c7ff47] active:scale-95 transition-all shadow-[0_0_12px_rgba(183,245,42,0.3)]"
                     >
-                      <Play className="w-3.5 h-3.5 fill-current" /> Launch
+                      <Play className="w-3 h-3 fill-current" /> START
                     </button>
                   </div>
                 );
@@ -139,77 +173,68 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
           </div>
         )}
 
-        {/* MAIN BODY AREA */}
-        {!selectedMuscle ? (
-          /* MUSCLE LIST GRID */
-          <div className="space-y-4">
-            <h2 className="text-xs font-bold text-dark-muted tracking-widest uppercase flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-red-500" />
-              Custom Selection by Muscle
+        {/* PROTOCOLS GRID */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-display font-black text-[#6F7075] tracking-widest uppercase flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5 text-[#B7F52A]" />
+              {selectedMuscle ? `${cleanMuscleName(selectedMuscle).toUpperCase()} MOVEMENTS` : 'COMPLETE MOVEMENT DIRECTORY'}
             </h2>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {Object.keys(exercisesData || {}).map((muscle) => (
-                <button
-                  key={muscle}
-                  onClick={() => setSelectedMuscle(muscle)}
-                  className="futuristic-card p-6 rounded-3xl text-left border border-gold/15 hover:border-gold/50 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-[150px] group relative overflow-hidden"
-                >
-                  <div className="w-10 h-10 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                    {getMuscleIcon(muscle)}
-                  </div>
-                  
-                  <div className="z-10">
-                    <span className="text-lg font-extrabold block text-white group-hover:text-gold transition-colors">
-                      {cleanMuscleName(muscle)}
-                    </span>
-                    <span className="text-[10px] font-bold text-dark-muted tracking-wider block mt-1 uppercase">
-                      {Object.keys(exercisesData[muscle]).length} Exercises
-                    </span>
-                  </div>
-                  
-                  <div className="absolute inset-0 bg-gradient-to-tr from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-              ))}
-            </div>
           </div>
-        ) : (
-          /* EXERCISE LIST FOR SELECTED MUSCLE */
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
-            {Object.keys(exercisesData[selectedMuscle] || {}).map((exKey) => {
-              const exData = exercisesData[selectedMuscle][exKey];
-              const cleanExName = formatExerciseName(exKey);
-              return (
-                <div 
-                  key={exKey}
-                  className="futuristic-card p-6 rounded-3xl border border-gold/15 flex flex-col justify-between h-[200px] hover:border-red-500/40 transition-all duration-300 group relative overflow-hidden"
-                >
-                  <div>
-                    <h3 className="text-lg font-black group-hover:text-gold transition-colors text-white">{cleanExName}</h3>
-                    
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="px-2.5 py-1 bg-white/5 border border-gold/20 rounded-lg text-[9px] font-bold text-gold uppercase tracking-widest">
-                        Posture: {exData.posture.replace(/_/g, ' ')}
-                      </span>
-                      <span className="px-2.5 py-1 bg-red-500/10 border border-red-500/30 rounded-lg text-[9px] font-bold text-red-500 uppercase tracking-widest">
-                        Joint: {exData.joint}
-                      </span>
-                    </div>
-                  </div>
 
-                  <button
-                    onClick={() => onSelectExercise(exKey, cleanExName)}
-                    className="w-full py-3 neon-btn-red text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-1.5 active:scale-95 z-10"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {(selectedMuscle ? [selectedMuscle] : muscleGroups).flatMap((mGroup) => 
+              Object.keys(exercisesData[mGroup] || {}).map((exKey) => {
+                const exData = exercisesData[mGroup][exKey];
+                const cleanExName = formatExerciseName(exKey);
+                return (
+                  <div 
+                    key={exKey}
+                    className="bg-[#101012] border border-white/10 hover:border-[#B7F52A]/60 p-5 rounded-[8px] flex flex-col justify-between min-h-[210px] transition-all group hover:bg-[#151517] relative"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" /> Start Tracking
-                  </button>
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 text-[9px] font-display font-black text-[#6F7075] uppercase tracking-wider rounded-[3px]">
+                          {cleanMuscleName(mGroup)}
+                        </span>
+                        <span className="px-2 py-0.5 bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[9px] font-display font-black text-[#B7F52A] uppercase tracking-wider rounded-[3px]">
+                          Joint: {exData.joint}
+                        </span>
+                      </div>
 
-                  <div className="absolute inset-0 bg-gradient-to-tr from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-              );
-            })}
+                      <h3 className="text-base font-display font-bold text-white group-hover:text-[#B7F52A] transition-colors leading-snug">
+                        {cleanExName}
+                      </h3>
+
+                      <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/5">
+                        <div className="bg-[#0A0A0A] p-2 rounded-[4px] border border-white/5">
+                          <span className="text-[9px] font-display font-bold text-[#6F7075] uppercase block">Posture</span>
+                          <span className="text-[11px] font-display font-bold text-white capitalize truncate block mt-0.5">{exData.posture.replace(/_/g, ' ')}</span>
+                        </div>
+                        <div className="bg-[#0A0A0A] p-2 rounded-[4px] border border-white/5">
+                          <span className="text-[9px] font-display font-bold text-[#6F7075] uppercase block">Flexion</span>
+                          <span className="text-[11px] font-mono font-bold text-[#B7F52A] block mt-0.5">{exData.down}°</span>
+                        </div>
+                        <div className="bg-[#0A0A0A] p-2 rounded-[4px] border border-white/5">
+                          <span className="text-[9px] font-display font-bold text-[#6F7075] uppercase block">Extension</span>
+                          <span className="text-[11px] font-mono font-bold text-white block mt-0.5">{exData.up}°</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => onSelectExercise(exKey, cleanExName)}
+                      className="w-full mt-4 py-2.5 bg-transparent hover:bg-[#B7F52A] border border-[#B7F52A]/40 hover:border-[#B7F52A] text-white hover:text-[#050505] text-xs font-display font-black tracking-wider uppercase rounded-[4px] flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" /> INITIALIZE TRACKER
+                    </button>
+                  </div>
+                );
+              })
+            )}
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );
