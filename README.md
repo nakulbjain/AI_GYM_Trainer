@@ -1,55 +1,56 @@
-# ⚡ AI Gym Trainer - Real-Time Posture Analytics & Injury Prevention
+# ⚡ AI Gym Trainer - Real-Time Posture Analytics & Biomechanics Coaching
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://ai-gym-trainer-git-main-shivprasadtlengli39-2300s-projects.vercel.app)
-[![Backend Status](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://ai-gym-backend-tvnk.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://ai-gym-trainer-amber.vercel.app/)
+[![Backend Status](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://ai-gym-trainer-at66.onrender.com)
+[![Python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 
-An end-to-end, AI-powered computer vision fitness application that monitors exercise form, tracks repetitions, calculates active joint angles and range of motion (ROM) in real time, and prevents workout injuries using biomechanics analysis and instant voice coaching.
+An end-to-end, AI-powered computer vision fitness application that monitors exercise form, tracks repetitions, calculates active joint angles and Range of Motion (ROM) in real time, and helps prevent workout injuries using biomechanics analysis and instant voice coaching.
 
 ---
 
-## ✨ Features
+## 🚀 Live Deployments
 
-- 🏋️ **60 FPS Real-Time AR Skeleton Overlay**: Hybrid computer vision pipeline using WebAssembly MediaPipe Pose for zero-latency in-browser body joint tracking.
+- **Frontend App**: [https://ai-gym-trainer-amber.vercel.app](https://ai-gym-trainer-amber.vercel.app/)
+- **Backend API**: [https://ai-gym-trainer-at66.onrender.com](https://ai-gym-trainer-at66.onrender.com)
+
+---
+
+## ✨ Key Features
+
+- 🏋️ **Real-Time Full-Body Skeleton Overlay**: Neon AR skeletal overlay rendered over live webcam feed with joint dots and bone connectors scaled to your body.
 - 📐 **Live Joint Angle & ROM Tracking**: Calculates exact joint flexions (elbows, knees, hips, shoulders) and Range of Motion (ROM %) frame-by-frame.
-- 🚫 **Posture Verification & Cheating Prevention**: Exercises only count repetitions when performed in strict, valid form.
-- 🗣️ **Live Voice Guidance & Real-Time Feedback**: Audio coaching and screen alerts tailored to the selected exercise.
+- 🚫 **Posture Verification & Rep Locking**: Category-based posture detection ensures you only get credited for reps executed with proper form.
+- 🗣️ **Intelligent Voice Coaching**: Throttled speech synthesizer provides actionable form corrections, set completion alerts, and hydration reminders.
 - 📊 **Interactive Dashboard & Readiness Analytics**: Tracks daily nutrition, water intake, workout streaks, fatigue levels, and joint stress indicators.
 - 📄 **Automated PDF Workout Reports**: Generates detailed PDF summaries of workout performance, accuracy, and biomechanics risk scores.
-- 📱 **Responsive Desktop & Mobile Layout**: Full-screen AR workout mode tailored for smartphones and desktop cameras.
+- 📱 **Responsive Desktop & Full-Screen Layout**: Full-screen AR workout mode tailored for both desktop and mobile webcams.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Architecture & Pipeline
 
-### Frontend
-- **Framework**: React 19 + Vite
-- **Styling**: Vanilla CSS + Tailwind CSS (Glassmorphic dark design system)
-- **Computer Vision**: `@mediapipe/pose` & `@mediapipe/camera_utils`
-- **Charts & Icons**: Recharts & Lucide React
-
-### Backend
-- **Framework**: FastAPI (Python 3.10+) + Uvicorn
-- **ORM & Database**: SQLAlchemy + SQLite
-- **Computer Vision & Biomechanics**: OpenCV (Headless) + MediaPipe Python
-- **PDF Generation**: ReportLab
-- **Real-Time Streaming**: WebSockets (`wss://`)
-
----
-
-## 🚀 Live Deployment
-
-- **Frontend App**: [https://ai-gym-trainer-git-main-shivprasadtlengli39-2300s-projects.vercel.app](https://ai-gym-trainer-git-main-shivprasadtlengli39-2300s-projects.vercel.app)
-- **Backend API**: [https://ai-gym-backend-tvnk.onrender.com](https://ai-gym-backend-tvnk.onrender.com)
+### Real-Time Computer Vision Pipeline
+1. **Frontend Frame Capture**: The React application captures webcam frames at ~7.5 FPS via an HTML5 canvas and streams compressed base64 JPEG payloads over a dedicated WebSocket connection (`/ws/track/{userId}`).
+2. **Backend Pose Inference**: FastAPI routes incoming frames to a `WorkoutSocketSession`:
+   - Base64 payload decoding and NumPy buffer conversion
+   - Frame decoding with `opencv-python-headless`
+   - BGR → RGB color conversion
+   - 33-point body landmark detection via MediaPipe Pose (`mediapipe==0.10.21`, `numpy<2`)
+3. **Biomechanics Analysis**:
+   - Computes target joint angles (e.g. elbow for Bicep Curl / Tricep Pushdown, knee for Squat, hip for Deadlift)
+   - Evaluates posture constraints via `ExerciseVerifier`
+   - Tracks rep cycles (UP / DOWN / LOCKED) and ROM % via `MotionProfiler`
+   - Monitors physical tremor and rep speed decay via `FatigueTracker`
+4. **SVG AR Rendering**: Landmark coordinates are returned as screen-independent percentage values (`0-100%`) and overlaid onto the video stream using reactive SVG paths.
 
 ---
 
 ## 💻 Local Installation & Setup
 
 ### Prerequisites
-- Python 3.10 - 3.12 (Recommended for MediaPipe Pose solutions compatibility)
+- Python 3.10 – 3.12 (Python 3.12 recommended for MediaPipe compatibility)
 - Node.js 18 or higher
 - Git
 
@@ -63,32 +64,38 @@ cd AI_GYM_Trainer
 ```bash
 cd backend
 
-# Create virtual environment (optional)
+# Create virtual environment
 python -m venv venv
-# On Windows:
+
+# Activate virtual environment
+# Windows (cmd/PowerShell):
 venv\Scripts\activate
-# On macOS/Linux:
+# macOS/Linux:
 source venv/bin/activate
 
-# Install backend dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Start FastAPI backend server
+# Start FastAPI server
 uvicorn main:app --reload --port 8000
 ```
-Backend server will run at: `http://localhost:8000`
+Backend will be live at: `http://localhost:8000` (Swagger docs at: `http://localhost:8000/docs`)
 
 ### 3. Frontend Setup
 ```bash
 cd frontend
 
-# Install frontend dependencies
+# Install dependencies
 npm install
 
-# Run Vite dev server
+# Configure environment variables (.env)
+# VITE_API_URL=http://localhost:8000
+# VITE_WS_URL=ws://localhost:8000
+
+# Run development server
 npm run dev
 ```
-Frontend web application will run at: `http://localhost:5173`
+Frontend will be live at: `http://localhost:5173`
 
 ---
 
@@ -98,36 +105,39 @@ Frontend web application will run at: `http://localhost:5173`
 AI_GYM_Trainer/
 ├── backend/
 │   ├── ai_logic/
-│   │   ├── chatbot.py            # AI Fitness assistant response engine
-│   │   ├── fatigue.py            # Physical fatigue and tremble estimator
+│   │   ├── chatbot.py            # AI fitness assistant response engine
+│   │   ├── fatigue.py            # Physical fatigue and tremor estimator
 │   │   ├── planner.py            # Custom workout & diet plan generator
 │   │   ├── readiness.py          # Daily training readiness score calculator
-│   │   ├── report_generator.py   # ReportLab PDF report generator
+│   │   ├── report_generator.py   # ReportLab PDF summary generator
 │   │   └── socket_manager.py     # Real-time WebSocket frame & pose engine
 │   ├── assets/videos/            # Reference exercise demo videos
 │   ├── core/
 │   │   ├── exercise_verifier.py  # Category-based posture rules & verifiers
 │   │   ├── injury_detection.py   # Joint mechanics safety analyzer
 │   │   └── pose_detector.py      # MediaPipe pose wrapper
-│   ├── data/                     # Pose recording datasets
 │   ├── exercises/
-│   │   ├── exercise_dict.py      # Angle targets and posture profiles
+│   │   ├── exercise_dict.py      # Target angle thresholds and joint mapping
 │   │   └── motion_profiler.py    # Angle state machines & rep counters
-│   ├── models/                   # Classifier weights
-│   ├── utils/                    # Angle math & HUD visualizers
 │   ├── database.py               # SQLite / PostgreSQL session configuration
 │   ├── main.py                   # FastAPI REST routes & WebSocket endpoint
-│   ├── main_desktop.py           # Standalone OpenCV desktop window tracker
 │   ├── models.py                 # SQLAlchemy relational ORM models
-│   ├── schemas.py                # Pydantic API response schemas
-│   └── requirements.txt          # Python dependencies
+│   ├── schemas.py                # Pydantic request & response schemas
+│   └── requirements.txt          # Production-pinned Python dependencies
 ├── frontend/
 │   ├── public/
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/           # Dashboard, WorkoutArea, Analytics, Onboarding
-│   │   ├── App.jsx               # Main application component
-│   │   └── main.jsx              # React entry point
+│   │   ├── components/
+│   │   │   ├── Analytics.jsx         # Performance analytics and charts
+│   │   │   ├── ChatAssistant.jsx     # AI workout coach assistant
+│   │   │   ├── Dashboard.jsx         # User stats, intake, and workouts
+│   │   │   ├── Onboarding.jsx        # Profile setup and goals questionnaire
+│   │   │   ├── ProfileView.jsx       # User profile and settings
+│   │   │   ├── ProgressPhotos.jsx    # Photo logging and timeline
+│   │   │   ├── WorkoutArea.jsx       # Real-time camera, HUD, and SVG AR overlay
+│   │   │   └── WorkoutSelection.jsx  # Muscle group & exercise regime selector
+│   │   ├── App.jsx                   # Master application router & state
+│   │   └── main.jsx                  # React entry point
 │   ├── index.html
 │   ├── package.json
 │   ├── tailwind.config.js
