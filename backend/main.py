@@ -632,7 +632,15 @@ async def websocket_tracking_endpoint(websocket: WebSocket, user_id: int):
                     session.set_exercise(data.get("exercise"))
                     
                 result = session.process_frame(image_b64)
-                await websocket.send_json(result)
+                
+                # 7. JSON response transmission
+                try:
+                    await websocket.send_json(result)
+                    if hasattr(session, "_diag_count") and session._diag_count % 30 == 1:
+                        print(f"[WebSocket] Response sent for frame #{session._diag_count} (verified={result.get('verified')}, reps={result.get('reps')})")
+                except Exception as tx_err:
+                    print(f"[WebSocket] Error during JSON response transmission: {tx_err}")
+                    raise tx_err
                 
             elif event == "finish":
                 # Session complete, send final stats
@@ -641,10 +649,10 @@ async def websocket_tracking_endpoint(websocket: WebSocket, user_id: int):
                 
     except WebSocketDisconnect:
         # Gracefully handle disconnects
-        pass
+        print(f"[WebSocket] Client {user_id} disconnected.")
     except Exception as e:
-        print(f"WebSocket error: {str(e)}")
+        print(f"[WebSocket] Fatal error in socket loop for user {user_id}: {str(e)}")
         try:
             await websocket.send_json({"error": str(e)})
-        except:
+        except Exception:
             pass

@@ -61,29 +61,72 @@ class WorkoutSocketSession:
         if not self.current_exercise:
             return {"error": "No exercise selected"}
 
-        # 1. Decode base64 image
+        # 1. Base64 decoding
         try:
             if "," in image_b64:
                 image_b64 = image_b64.split(",")[1]
             img_bytes = base64.b64decode(image_b64)
+        except Exception as e:
+            print(f"[SocketSession] Error during base64 decoding: {e}")
+            return {"error": f"Base64 decoding failed: {str(e)}"}
+
+        # 2. NumPy buffer conversion
+        try:
             nparr = np.frombuffer(img_bytes, np.uint8)
+        except Exception as e:
+            print(f"[SocketSession] Error during NumPy conversion: {e}")
+            return {"error": f"NumPy conversion failed: {str(e)}"}
+
+        # 3. cv2.imdecode
+        try:
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             if img is None:
-                return {"error": "Failed to decode frame"}
+                print("[SocketSession] Error: cv2.imdecode returned None (corrupted frame)")
+                return {"error": "cv2.imdecode failed: image could not be decoded"}
         except Exception as e:
-            return {"error": f"Base64 decode exception: {str(e)}"}
+            print(f"[SocketSession] Exception in cv2.imdecode: {e}")
+            return {"error": f"cv2.imdecode exception: {str(e)}"}
 
         h, w, _ = img.shape
 
-        # 2. Run Pose Detection (Headless mode - don't draw on backend image)
-        img = self.pose_detector.findPose(img, draw=False)
-        lmList = self.pose_detector.getLandmarks(img)
+        # 4 & 5. BGR -> RGB and MediaPipe Pose Inference
+        try:
+            imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            self.pose_detector.results = self.pose_detector.pose.process(imgRGB)
+        except Exception as e:
+            print(f"[SocketSession] Error during MediaPipe inference/color conversion: {e}")
+            return {"error": f"MediaPipe inference failed: {str(e)}"}
 
-        if len(lmList) < 29:
+        # 6. Landmark extraction
+        try:
+            lmList = self.pose_detector.getLandmarks(img)
+        except Exception as e:
+            print(f"[SocketSession] Error during landmark extraction: {e}")
+            return {"error": f"Landmark extraction failed: {str(e)}"}
+
+        # Log throttled successful diagnostics (every 30 frames)
+        if not hasattr(self, "_diag_count"):
+            self._diag_count = 0
+        self._diag_count += 1
+        if self._diag_count % 30 == 1:
+            print(f"[SocketSession] Frame #{self._diag_count} processed - Frame decoded ({w}x{h}) - Pose landmarks detected: {len(lmList)}")
+
+        # Format landmarks to return to React for high-performance canvas overlays
+        react_landmarks = []
+        for lm in lmList:
+            # Scale coordinates back to percentages for screen-independent drawing
+            react_landmarks.append({
+                "id": lm[0],
+                "x": round(lm[1] / w * 100, 1),
+                "y": round(lm[2] / h * 100, 1),
+                "z": round(lm[3], 2)
+            })
+
+        if len(lmList) < 15:
             return {
                 "verified": False,
-                "landmarks": [],
-                "message": "Stand fully in the camera's view (entire body visible)",
+                "landmarks": react_landmarks,
+                "message": "Stand in view (upper body and arms visible)",
                 "reps": self.reps_count,
                 "sets": self.sets_count,
                 "stage": self.stage,
@@ -95,17 +138,6 @@ class WorkoutSocketSession:
                 "warning": "",
                 "water_reminder": False
             }
-
-        # 3. Format landmarks to return to React for high-performance canvas overlays
-        react_landmarks = []
-        for lm in lmList:
-            # Scale coordinates back to percentages for screen-independent drawing
-            react_landmarks.append({
-                "id": lm[0],
-                "x": round(lm[1] / w * 100, 1),
-                "y": round(lm[2] / h * 100, 1),
-                "z": round(lm[3], 2)
-            })
 
         # 4. Check exercise configuration
         if self.current_exercise not in ALL_EXERCISES:

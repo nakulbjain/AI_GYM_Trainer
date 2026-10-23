@@ -44,8 +44,10 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   const canvasRef = useRef(null);
   const wsRef = useRef(null);
   const frameIntervalRef = useRef(null);
+  const videoCheckTimerRef = useRef(null);
   const streamRef = useRef(null);
   const restTimerRef = useRef(null);
+  const isStartingRef = useRef(false);
 
   // Stats accumulated during current exercise
   const [accuraciesList, setAccuraciesList] = useState([]);
@@ -113,13 +115,22 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
         audio: false
       });
-      videoRef.current.srcObject = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        try {
+          await videoRef.current.play();
+        } catch (_) {}
+      }
       streamRef.current = stream;
+      console.log(`[AI-Trainer] Camera ready (tracks: ${stream.getVideoTracks().length})`);
+      return stream;
     } catch (err) {
+      console.error("[AI-Trainer] Camera access failed:", err);
       alert("Webcam permission denied! Camera module requires access to continue.");
+      throw err;
     }
   };
 
@@ -127,9 +138,18 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     if (frameIntervalRef.current) {
       clearInterval(frameIntervalRef.current);
+      frameIntervalRef.current = null;
+    }
+    if (videoCheckTimerRef.current) {
+      clearInterval(videoCheckTimerRef.current);
+      videoCheckTimerRef.current = null;
     }
   };
 
@@ -138,27 +158,53 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
     const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const fallbackWsUrl = rawApiUrl.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
     const wsBaseUrl = import.meta.env.VITE_WS_URL || fallbackWsUrl;
-    const ws = new WebSocket(`${wsBaseUrl}/ws/track/${userId}`);
+    const wsEndpoint = `${wsBaseUrl}/ws/track/${userId || 1}`;
+    console.log(`[AI-Trainer] Connecting WebSocket to: ${wsEndpoint}`);
+    
+    // Disconnect any existing socket before opening a new one
+    if (wsRef.current) {
+      try {
+        wsRef.current.close();
+      } catch (_) {}
+      wsRef.current = null;
+    }
+
+    const ws = new WebSocket(wsEndpoint);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      console.log(`[AI-Trainer] WebSocket connected: ${wsEndpoint} (readyState: ${ws.readyState})`);
       // Send active exercise configuration
-      ws.send(JSON.stringify({
-        event: 'config',
-        exercise: currentEx
-      }));
+      const configMsg = { event: 'config', exercise: currentEx };
+      console.log(`[AI-Trainer] Sending initial exercise config:`, configMsg);
+      ws.send(JSON.stringify(configMsg));
     };
 
+    let msgCount = 0;
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      msgCount++;
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch (parseErr) {
+        console.error("[AI-Trainer] Failed to parse WebSocket message:", event.data);
+        return;
+      }
+
       if (data.error) {
-        console.error(data.error);
+        console.error(`[AI-Trainer] WebSocket returned error from backend:`, data.error);
+        setWarningMsg(`Backend error: ${data.error}`);
         return;
       }
 
       if (data.event === 'summary') {
-        // Summary payload received from backend
+        console.log(`[AI-Trainer] Received workout summary:`, data);
         return;
+      }
+
+      // Periodic diagnostic every 30 responses
+      if (msgCount % 30 === 1) {
+        console.log(`[AI-Trainer] WebSocket response received (#${msgCount}) - Landmarks detected: ${data.landmarks ? data.landmarks.length : 0} - Stage: ${data.stage} - Angle: ${data.active_angle}°`);
       }
 
       // Update state parameters
@@ -194,32 +240,71 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
       }
     };
 
-    ws.onclose = () => {
-      console.log("WebSocket disconnected");
+    ws.onerror = (err) => {
+      console.error(`[AI-Trainer] WebSocket error for ${wsEndpoint}:`, err);
     };
+
+    ws.onclose = (e) => {
+      console.warn(`[AI-Trainer] WebSocket closed:`, {
+        url: wsEndpoint,
+        code: e.code,
+        reason: e.reason || 'No reason provided',
+        wasClean: e.wasClean
+      });
+    };
+
+    return ws;
   };
 
   // Disconnect WebSocket
   const disconnectWebSocket = () => {
     if (wsRef.current) {
-      wsRef.current.close();
+      console.log("[AI-Trainer] Closing WebSocket explicitly.");
+      try {
+        wsRef.current.close();
+      } catch (_) {}
+      wsRef.current = null;
     }
   };
 
   // Start frame capturing loops
   const startFrameLoop = () => {
+    if (frameIntervalRef.current) {
+      clearInterval(frameIntervalRef.current);
+      frameIntervalRef.current = null;
+    }
+
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
     const video = videoRef.current;
+    if (!canvas || !video) {
+      console.warn("[AI-Trainer] startFrameLoop aborted: canvas or video ref is missing");
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    let framesSent = 0;
+
+    console.log(`[AI-Trainer] Frame loop started (target rate: ~7.5 fps, canvas: ${canvas.width}x${canvas.height})`);
 
     frameIntervalRef.current = setInterval(() => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isResting) return;
+      if (!video.videoWidth || !video.videoHeight) return;
+
+      // Ensure canvas resolution matches video feed resolution
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
 
       // Draw video frame to hidden canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       // Get base64 string
       const jpegBase64 = canvas.toDataURL('image/jpeg', 0.5); // Compress to 50% quality
+
+      framesSent++;
+      if (framesSent % 30 === 1) {
+        console.log(`[AI-Trainer] Frame #${framesSent} sent - Frame payload size: ${jpegBase64.length} chars - Exercise: ${currentEx}`);
+      }
 
       // Send to WebSocket
       wsRef.current.send(JSON.stringify({
@@ -230,23 +315,73 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
     }, 130); // ~7.5 frames per second - low latency and smooth
   };
 
+  // Master workout lifecycle hook
   useEffect(() => {
-    if (isRunning && !isResting) {
-      startCamera();
-      connectWebSocket();
-      // Wait for video meta to initialize loop
-      const checkVideo = setInterval(() => {
-        if (videoRef.current && videoRef.current.readyState >= 3) {
-          startFrameLoop();
-          clearInterval(checkVideo);
+    let isCancelled = false;
+
+    const initWorkout = async () => {
+      if (!isRunning || isResting || currentEx === 'treadmill') {
+        stopCamera();
+        disconnectWebSocket();
+        return;
+      }
+
+      // Prevent overlapping concurrent inits
+      if (isStartingRef.current) return;
+      isStartingRef.current = true;
+
+      try {
+        // 1. Await camera access
+        await startCamera();
+        if (isCancelled) {
+          stopCamera();
+          isStartingRef.current = false;
+          return;
         }
-      }, 200);
-    } else {
-      stopCamera();
-      disconnectWebSocket();
-    }
+
+        // 2. Connect WebSocket
+        connectWebSocket();
+
+        // 3. Confirm video readyState >= 2 (HAVE_CURRENT_DATA) and non-zero dimensions
+        if (videoCheckTimerRef.current) {
+          clearInterval(videoCheckTimerRef.current);
+          videoCheckTimerRef.current = null;
+        }
+
+        videoCheckTimerRef.current = setInterval(() => {
+          if (isCancelled) {
+            if (videoCheckTimerRef.current) {
+              clearInterval(videoCheckTimerRef.current);
+              videoCheckTimerRef.current = null;
+            }
+            return;
+          }
+
+          const vid = videoRef.current;
+          if (vid && vid.readyState >= 2 && vid.videoWidth > 0 && vid.videoHeight > 0) {
+            console.log(`[AI-Trainer] Video element confirmed ready (${vid.videoWidth}x${vid.videoHeight}, readyState=${vid.readyState})`);
+            clearInterval(videoCheckTimerRef.current);
+            videoCheckTimerRef.current = null;
+            startFrameLoop();
+          }
+        }, 150);
+
+      } catch (err) {
+        console.error("[AI-Trainer] Initialization error:", err);
+      } finally {
+        isStartingRef.current = false;
+      }
+    };
+
+    initWorkout();
 
     return () => {
+      isCancelled = true;
+      isStartingRef.current = false;
+      if (videoCheckTimerRef.current) {
+        clearInterval(videoCheckTimerRef.current);
+        videoCheckTimerRef.current = null;
+      }
       stopCamera();
       disconnectWebSocket();
     };
@@ -565,7 +700,7 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
                   autoPlay 
                   playsInline 
                   muted 
-                  className="w-full h-full object-contain scale-x-[-1] z-10" // Mirror camera with object-contain for 1:1 landmark precision
+                  className="w-full h-full object-cover scale-x-[-1] z-10" // Mirrored camera with object-cover for full container alignment
                 />
 
                 {/* Hidden Frame Grab Canvas */}
