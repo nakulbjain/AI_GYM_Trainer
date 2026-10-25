@@ -1,10 +1,12 @@
 // frontend/src/components/WorkoutSelection.jsx
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Dumbbell, Play, Sparkles, Layers, Activity, Target, ShieldCheck, Flame } from 'lucide-react';
+import MuscleMap, { MUSCLE_REGIONS } from './MuscleMap';
 
 export default function WorkoutSelection({ userId, workoutExercises, setView, onSelectExercise }) {
   const [exercisesData, setExercisesData] = useState(null);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [selectedAnatomicalMuscle, setSelectedAnatomicalMuscle] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,11 +41,11 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#F7F7F5] px-4">
-        <div className="bg-[#101012] border border-[#FF4D4F]/30 p-8 rounded-[10px] text-center max-w-md">
+        <div className="bg-[#101012] border border-[#FF4D4F]/30 p-8 rounded-[8px] text-center max-w-md">
           <p className="text-xs font-display font-bold text-[#FF4D4F] mb-6 tracking-wide">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-5 py-2.5 bg-[#B7F52A] text-[#050505] font-display font-bold rounded-[6px] text-xs uppercase tracking-wider"
+            className="px-5 py-2.5 bg-[#B7F52A] text-[#050505] font-display font-bold rounded-[4px] text-xs uppercase tracking-wider hover:bg-[#c7ff47] transition-colors"
           >
             Retry Connection
           </button>
@@ -73,7 +75,7 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
             {selectedMuscle && (
               <button 
                 onClick={() => setSelectedMuscle(null)}
-                className="w-9 h-9 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-[#B7F52A] transition-colors"
+                className="w-9 h-9 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-white transition-colors"
                 title="Back to All Categories"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -103,9 +105,12 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
         {/* TACTICAL CATEGORY CHIPS */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button
-            onClick={() => setSelectedMuscle(null)}
+            onClick={() => {
+              setSelectedMuscle(null);
+              setSelectedAnatomicalMuscle(null);
+            }}
             className={`px-3.5 py-1.5 rounded-[4px] text-xs font-display font-bold uppercase tracking-wider whitespace-nowrap transition-all border ${
-              selectedMuscle === null
+              selectedMuscle === null && selectedAnatomicalMuscle === null
                 ? 'bg-[#B7F52A] text-[#050505] border-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.3)]'
                 : 'bg-[#101012] text-[#6F7075] border-white/10 hover:text-white hover:border-white/20'
             }`}
@@ -114,11 +119,14 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
           </button>
           {muscleGroups.map((muscle) => {
             const count = Object.keys(exercisesData[muscle] || {}).length;
-            const isSelected = selectedMuscle === muscle;
+            const isSelected = selectedMuscle === muscle && !selectedAnatomicalMuscle;
             return (
               <button
                 key={muscle}
-                onClick={() => setSelectedMuscle(muscle)}
+                onClick={() => {
+                  setSelectedMuscle(muscle);
+                  setSelectedAnatomicalMuscle(null);
+                }}
                 className={`px-3.5 py-1.5 rounded-[4px] text-xs font-display font-bold uppercase tracking-wider whitespace-nowrap transition-all border ${
                   isSelected
                     ? 'bg-[#B7F52A] text-[#050505] border-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.3)]'
@@ -130,6 +138,21 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
             );
           })}
         </div>
+
+        {/* 1. VISUAL DISCOVERY: INTERACTIVE MUSCLE MAP */}
+        <MuscleMap
+          selectedMuscle={selectedAnatomicalMuscle}
+          onSelectMuscle={(muscleId) => {
+            setSelectedAnatomicalMuscle(muscleId);
+            if (muscleId && MUSCLE_REGIONS[muscleId]) {
+              setSelectedMuscle(MUSCLE_REGIONS[muscleId].category);
+            } else {
+              setSelectedMuscle(null);
+            }
+          }}
+          exercisesData={exercisesData}
+          onSelectExercise={onSelectExercise}
+        />
 
         {/* TODAY'S SCHEDULED SESSION (If not filtering by specific muscle) */}
         {!selectedMuscle && workoutExercises && workoutExercises.length > 0 && (
