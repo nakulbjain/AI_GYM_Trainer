@@ -83,7 +83,7 @@ export default function Onboarding({ onFinish }) {
   const handleFinish = async () => {
     if (!name.trim()) return setError('Please enter your name');
     if (!email.trim() || !email.includes('@')) return setError('Please enter a valid email');
-    if (!phone.trim()) return setError('Please enter your phone number');
+    if (!phone.trim() || !/^\d{10}$/.test(phone.trim())) return setError('Phone number must be exactly 10 digits');
     if (!password) return setError('Please enter a password');
     if (!age || isNaN(age)) return setError('Please enter a valid age');
     if (!height || isNaN(height)) return setError('Please enter a valid height');
@@ -151,7 +151,7 @@ export default function Onboarding({ onFinish }) {
     if (step === 2) {
       if (!name.trim()) return setError('Name is required');
       if (!email.trim() || !email.includes('@')) return setError('Please enter a valid email');
-      if (!phone.trim() || phone.length < 8) return setError('Please enter a valid phone number (at least 8 digits)');
+      if (!phone.trim() || !/^\d{10}$/.test(phone.trim())) return setError('Phone number must be exactly 10 digits');
       if (!password || password.length < 4) return setError('Password must be at least 4 characters');
       if (!age || age < 10 || age > 100) return setError('Please enter a valid age (10-100)');
       if (!height || height < 100 || height > 250) return setError('Please enter a valid height (100-250 cm)');
@@ -352,9 +352,14 @@ export default function Onboarding({ onFinish }) {
                   <label className="text-[11px] font-mono text-[#6F7075] uppercase block mb-1.5">Phone Number</label>
                   <input
                     type="tel"
-                    placeholder="+1 555-0199"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="9876543210"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setPhone(digitsOnly);
+                    }}
                     className="w-full px-4 py-3 bg-[#0A0A0A] outline-none rounded border border-white/15 focus:border-[#B7F52A] text-[#F7F7F5] text-sm font-sans transition-all placeholder:text-[#6F7075]/60"
                   />
                 </div>
