@@ -358,6 +358,18 @@ def get_dashboard_summary(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/intake/{user_id}", response_model=schemas.DailyIntakeResponse)
 def update_daily_intake(user_id: int, update: schemas.DailyIntakeUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Validate non-negative bounds
+    if update.water_liters is not None and (update.water_liters < 0 or update.water_liters > 10.0):
+        raise HTTPException(status_code=400, detail="Water intake increment must be between 0 and 10 liters")
+    if update.protein_grams is not None and (update.protein_grams < 0 or update.protein_grams > 500):
+        raise HTTPException(status_code=400, detail="Protein increment must be between 0 and 500 grams")
+    if update.calories_kcal is not None and (update.calories_kcal < 0 or update.calories_kcal > 10000):
+        raise HTTPException(status_code=400, detail="Calorie increment must be between 0 and 10000 kcal")
+
     today = datetime.date.today()
     intake = db.query(models.DailyIntake).filter(
         models.DailyIntake.user_id == user_id,
@@ -375,7 +387,7 @@ def update_daily_intake(user_id: int, update: schemas.DailyIntakeUpdate, db: Ses
         db.add(intake)
 
     if update.water_liters is not None:
-        intake.water_liters = round((intake.water_liters or 0.0) + update.water_liters, 1)
+        intake.water_liters = round((intake.water_liters or 0.0) + update.water_liters, 2)
     if update.protein_grams is not None:
         intake.protein_grams = max(0, (intake.protein_grams or 0) + update.protein_grams)
     if update.calories_kcal is not None:

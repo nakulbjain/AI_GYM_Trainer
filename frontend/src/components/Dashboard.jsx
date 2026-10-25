@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Flame, Calendar, Trophy, ChevronRight, Droplet, Dumbbell, 
   Apple, History, Image, Star, Plus, 
-  BedDouble, UserCheck, ShieldCheck, HeartPulse, Activity, Zap
+  BedDouble, UserCheck, ShieldCheck, HeartPulse, Activity, Zap,
+  X, CheckCircle2
 } from 'lucide-react';
 
 export default function Dashboard({ userId, userName, setView, onStartWorkout, data, setData, fetchDashboardData }) {
@@ -49,32 +50,38 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
     }
   }, [userId, data]);
 
-  const handleQuickLog = async (type, amount) => {
-    try {
-      const payload = {};
-      if (type === 'water') {
-        setAddingWater(true);
-        payload.water_liters = amount;
-      }
-      if (type === 'protein') {
-        setAddingProtein(true);
-        payload.protein_grams = amount;
-      }
-      if (type === 'calories') {
-        setAddingCal(true);
-        payload.calories_kcal = amount;
-      }
+  // Custom Intake State
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customWaterMl, setCustomWaterMl] = useState('');
+  const [customProteinG, setCustomProteinG] = useState('');
+  const [customCaloriesKcal, setCustomCaloriesKcal] = useState('');
+  const [customError, setCustomError] = useState('');
+  const [submittingCustom, setSubmittingCustom] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
 
+  // Unified Intake API caller
+  const updateIntake = async (payload, successLabel = 'INTAKE UPDATED') => {
+    try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/intake/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       
-      if (!res.ok) throw new Error('Quick log failed');
+      if (!res.ok) {
+        let errorMsg = 'Unable to log intake. Please try again.';
+        try {
+          const errData = await res.json();
+          if (errData && errData.detail) {
+            errorMsg = typeof errData.detail === 'string' ? errData.detail : JSON.stringify(errData.detail);
+          }
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
+
       const intake = await res.json();
       
-      // Update local dashboard state
+      // Update local dashboard state immediately
       setData(prev => ({
         ...prev,
         intake_today: {
@@ -83,12 +90,128 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
           water: intake.water_liters
         }
       }));
+
+      // Set temporary non-blocking feedback toast
+      setFeedbackMessage(successLabel);
+      setTimeout(() => {
+        setFeedbackMessage(null);
+      }, 3500);
+
+      return intake;
     } catch (e) {
-      alert(e.message);
+      throw e;
+    }
+  };
+
+  const handleQuickLog = async (type, amount) => {
+    try {
+      const payload = {};
+      let label = 'INTAKE LOGGED';
+      if (type === 'water') {
+        setAddingWater(true);
+        payload.water_liters = amount;
+        label = `+${Math.round(amount * 1000)}ML WATER LOGGED`;
+      }
+      if (type === 'protein') {
+        setAddingProtein(true);
+        payload.protein_grams = amount;
+        label = `+${amount}G PROTEIN LOGGED`;
+      }
+      if (type === 'calories') {
+        setAddingCal(true);
+        payload.calories_kcal = amount;
+        label = `+${amount} KCAL LOGGED`;
+      }
+
+      await updateIntake(payload, label);
+    } catch (e) {
+      alert(e.message || 'Quick log failed');
     } finally {
       setAddingWater(false);
       setAddingProtein(false);
       setAddingCal(false);
+    }
+  };
+
+  const handleCustomSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setCustomError('');
+
+    const trimmedWater = customWaterMl.trim();
+    const trimmedProtein = customProteinG.trim();
+    const trimmedCalories = customCaloriesKcal.trim();
+
+    // Check if all fields are empty
+    if (!trimmedWater && !trimmedProtein && !trimmedCalories) {
+      setCustomError('Enter at least one intake value.');
+      return;
+    }
+
+    const payload = {};
+    const feedbackParts = [];
+
+    // Water validation (in ml)
+    if (trimmedWater) {
+      const waterNum = Number(trimmedWater);
+      if (isNaN(waterNum) || !isFinite(waterNum) || waterNum <= 0) {
+        setCustomError('Water must be a valid positive number.');
+        return;
+      }
+      if (waterNum > 10000) {
+        setCustomError('Water increment cannot exceed 10,000 ml (10 L).');
+        return;
+      }
+      const waterLiters = Number((waterNum / 1000).toFixed(2));
+      payload.water_liters = waterLiters;
+      feedbackParts.push(`${waterNum}ml Water`);
+    }
+
+    // Protein validation (whole number grams)
+    if (trimmedProtein) {
+      const proteinNum = Number(trimmedProtein);
+      if (isNaN(proteinNum) || !isFinite(proteinNum) || !Number.isInteger(proteinNum) || proteinNum <= 0) {
+        setCustomError('Protein must be a whole positive number of grams.');
+        return;
+      }
+      if (proteinNum > 500) {
+        setCustomError('Protein increment cannot exceed 500 g.');
+        return;
+      }
+      payload.protein_grams = proteinNum;
+      feedbackParts.push(`${proteinNum}g Protein`);
+    }
+
+    // Calories validation (whole number kcal)
+    if (trimmedCalories) {
+      const calNum = Number(trimmedCalories);
+      if (isNaN(calNum) || !isFinite(calNum) || !Number.isInteger(calNum) || calNum <= 0) {
+        setCustomError('Calories must be a whole positive number of kcal.');
+        return;
+      }
+      if (calNum > 10000) {
+        setCustomError('Calorie increment cannot exceed 10,000 kcal.');
+        return;
+      }
+      payload.calories_kcal = calNum;
+      feedbackParts.push(`${calNum} kcal`);
+    }
+
+    setSubmittingCustom(true);
+    try {
+      const label = feedbackParts.length === 1
+        ? `${feedbackParts[0].toUpperCase()} LOGGED`
+        : 'INTAKE UPDATED';
+      await updateIntake(payload, label);
+      // Success: clear inputs, close modal
+      setCustomWaterMl('');
+      setCustomProteinG('');
+      setCustomCaloriesKcal('');
+      setCustomError('');
+      setShowCustomModal(false);
+    } catch (err) {
+      setCustomError(err.message || 'Unable to log intake. Please try again.');
+    } finally {
+      setSubmittingCustom(false);
     }
   };
 
@@ -152,9 +275,17 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
 
   const currentDayMeals = diet_meals && diet_meals[activeDietDay] ? diet_meals[activeDietDay] : (diet_meals || {});
 
-  const waterPercent = Math.min(100, Math.round((intake_today.water / (goals.water_target || 3.5)) * 100));
-  const proteinPercent = Math.min(100, Math.round((intake_today.protein / (goals.protein_target || 140)) * 100));
-  const caloriesPercent = Math.min(100, Math.round((intake_today.calories / (goals.calories_target || 2400)) * 100));
+  const calcProgressPercent = (actual, target) => {
+    const safeTarget = Number(target);
+    const safeActual = Number(actual) || 0;
+    if (!safeTarget || isNaN(safeTarget) || safeTarget <= 0) return 0;
+    const pct = Math.round((safeActual / safeTarget) * 100);
+    return Math.max(0, Math.min(100, isNaN(pct) ? 0 : pct));
+  };
+
+  const waterPercent = calcProgressPercent(intake_today.water, goals.water_target || 3.5);
+  const proteinPercent = calcProgressPercent(intake_today.protein, goals.protein_target || 140);
+  const caloriesPercent = calcProgressPercent(intake_today.calories, goals.calories_target || 2400);
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-4 md:px-8 relative select-none">
@@ -207,7 +338,11 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
           <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Water Hydration</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-display font-black text-white">{intake_today.water}</span>
+              <span className="text-3xl font-display font-black text-white">
+                {typeof intake_today.water === 'number'
+                  ? Number(intake_today.water.toFixed(2))
+                  : (intake_today.water || 0)}
+              </span>
               <span className="text-xs font-display text-[#6F7075]">/ {goals.water_target || 3.5}L</span>
             </div>
             <div className="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -265,6 +400,15 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
               className="px-3 py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
             >
               <Flame className="w-3.5 h-3.5 text-[#FFB020]" /> +200 kcal
+            </button>
+            <button
+              onClick={() => {
+                setCustomError('');
+                setShowCustomModal(true);
+              }}
+              className="px-3 py-1.5 bg-transparent hover:bg-[#B7F52A]/10 border border-[#B7F52A]/40 hover:border-[#B7F52A] text-xs font-display font-black text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#B7F52A]" /> + CUSTOM
             </button>
           </div>
         </div>
@@ -513,6 +657,187 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* --- CUSTOM INTAKE MODAL --- */}
+      {showCustomModal && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !submittingCustom) {
+              setShowCustomModal(false);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && !submittingCustom) {
+              setShowCustomModal(false);
+            }
+          }}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="custom-intake-title"
+        >
+          <div className="w-full max-w-sm sm:max-w-md bg-[#101012] p-5 sm:p-6 rounded-[10px] border border-white/15 shadow-2xl animate-fade-in-up relative">
+            <div className="flex justify-between items-start mb-4 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A]">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="custom-intake-title" className="text-base sm:text-lg font-display font-black text-white uppercase tracking-wide">
+                    Log Custom Intake
+                  </h3>
+                  <p className="text-[11px] text-[#6F7075]">Add custom nutritional telemetry to today's intake</p>
+                </div>
+              </div>
+              <button
+                onClick={() => !submittingCustom && setShowCustomModal(false)}
+                disabled={submittingCustom}
+                aria-label="Close custom intake modal"
+                className="text-[#6F7075] hover:text-white p-1 rounded transition-colors disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {customError && (
+              <div className="mb-4 bg-[#FF4D4F]/10 border border-[#FF4D4F]/30 rounded-[4px] p-2.5 text-xs text-[#FF4D4F] font-medium leading-relaxed">
+                {customError}
+              </div>
+            )}
+
+            <form onSubmit={handleCustomSubmit} className="space-y-4">
+              {/* WATER INPUT */}
+              <div>
+                <label htmlFor="custom-water-input" className="flex items-center justify-between text-xs font-display font-bold text-white uppercase tracking-wider mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Droplet className="w-3.5 h-3.5 text-[#B7F52A]" /> Water
+                  </span>
+                  <span className="text-[10px] font-mono text-[#6F7075]">0 – 10,000 ml</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="custom-water-input"
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    min="1"
+                    max="10000"
+                    placeholder="e.g. 500"
+                    value={customWaterMl}
+                    onChange={(e) => {
+                      setCustomWaterMl(e.target.value);
+                      if (customError) setCustomError('');
+                    }}
+                    disabled={submittingCustom}
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-12"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
+                    ml
+                  </span>
+                </div>
+                {customWaterMl && !isNaN(Number(customWaterMl)) && Number(customWaterMl) > 0 && (
+                  <span className="text-[10px] font-mono text-[#B7F52A] mt-1 block">
+                    = {(Number(customWaterMl) / 1000).toFixed(2)} L
+                  </span>
+                )}
+              </div>
+
+              {/* PROTEIN INPUT */}
+              <div>
+                <label htmlFor="custom-protein-input" className="flex items-center justify-between text-xs font-display font-bold text-white uppercase tracking-wider mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Apple className="w-3.5 h-3.5 text-[#B7F52A]" /> Protein
+                  </span>
+                  <span className="text-[10px] font-mono text-[#6F7075]">0 – 500 g</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="custom-protein-input"
+                    type="number"
+                    inputMode="numeric"
+                    step="1"
+                    min="1"
+                    max="500"
+                    placeholder="e.g. 30"
+                    value={customProteinG}
+                    onChange={(e) => {
+                      setCustomProteinG(e.target.value);
+                      if (customError) setCustomError('');
+                    }}
+                    disabled={submittingCustom}
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-10"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
+                    g
+                  </span>
+                </div>
+              </div>
+
+              {/* CALORIES INPUT */}
+              <div>
+                <label htmlFor="custom-calories-input" className="flex items-center justify-between text-xs font-display font-bold text-white uppercase tracking-wider mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-[#FFB020]" /> Calories
+                  </span>
+                  <span className="text-[10px] font-mono text-[#6F7075]">0 – 10,000 kcal</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="custom-calories-input"
+                    type="number"
+                    inputMode="numeric"
+                    step="1"
+                    min="1"
+                    max="10000"
+                    placeholder="e.g. 600"
+                    value={customCaloriesKcal}
+                    onChange={(e) => {
+                      setCustomCaloriesKcal(e.target.value);
+                      if (customError) setCustomError('');
+                    }}
+                    disabled={submittingCustom}
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-14"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
+                    kcal
+                  </span>
+                </div>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="pt-3 flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomModal(false)}
+                  disabled={submittingCustom}
+                  className="w-1/3 py-2.5 bg-transparent border border-white/15 hover:bg-white/5 font-display font-bold rounded-[6px] text-xs text-white uppercase transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingCustom || (!customWaterMl.trim() && !customProteinG.trim() && !customCaloriesKcal.trim())}
+                  className="w-2/3 py-2.5 bg-[#B7F52A] hover:bg-[#c7ff47] disabled:opacity-40 text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[6px] transition-all active:scale-98 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(183,245,42,0.3)]"
+                >
+                  {submittingCustom ? 'LOGGING...' : 'ADD INTAKE'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- SUBTLE TOAST SUCCESS FEEDBACK --- */}
+      {feedbackMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#101012] border border-[#B7F52A]/40 px-4 py-3 rounded-[8px] shadow-2xl flex items-center gap-2.5 animate-fade-in-up">
+          <CheckCircle2 className="w-4 h-4 text-[#B7F52A] flex-shrink-0" />
+          <span className="text-xs font-display font-bold text-white uppercase tracking-wider">
+            {feedbackMessage}
+          </span>
         </div>
       )}
 
