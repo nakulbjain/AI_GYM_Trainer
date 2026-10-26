@@ -83,16 +83,17 @@ export default function Analytics({ userId, setView }) {
   const totalCalsBurned = history.reduce((a, b) => a + (b.calories_burned || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-4 md:px-8 relative select-none">
-      <div className="max-w-7xl mx-auto pt-8 space-y-8 relative z-10 animate-fade-in-up">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-3.5 sm:px-6 md:px-8 relative select-none">
+      <div className="max-w-7xl mx-auto pt-4 sm:pt-6 md:pt-8 space-y-6 md:space-y-8 relative z-10 animate-fade-in-up">
         
         {/* HEADER BAR */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 md:pb-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setView('dashboard')}
-              className="w-9 h-9 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-[#B7F52A] transition-colors"
+              className="w-10 h-10 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-[#B7F52A] transition-colors flex-shrink-0"
               title="Return to Dashboard"
+              aria-label="Return to Dashboard"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -103,18 +104,18 @@ export default function Analytics({ userId, setView }) {
                   BIOMECHANICAL AUDIT SYSTEM
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-white uppercase">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-black tracking-tight text-white uppercase break-words">
                 PERFORMANCE ANALYTICS & PROOF
               </h1>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {['7D', '8W', 'Season', 'All'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setTimeFilter(tab)}
-                className={`px-3 py-1.5 rounded-[4px] text-xs font-display font-bold uppercase tracking-wider transition-all border ${
+                className={`px-3 py-1.5 min-h-[36px] rounded-[4px] text-xs font-display font-bold uppercase tracking-wider transition-all border whitespace-nowrap ${
                   timeFilter === tab
                     ? 'bg-[#B7F52A] text-[#050505] border-[#B7F52A]'
                     : 'bg-[#101012] text-[#6F7075] border-white/10 hover:text-white'
@@ -127,18 +128,18 @@ export default function Analytics({ userId, setView }) {
         </div>
 
         {/* TOP SUMMARY STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px]">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Total Verified Sessions</span>
             <span className="text-2xl md:text-3xl font-display font-black text-white">{totalSessions}</span>
             <span className="text-[10px] font-mono text-[#B7F52A] block mt-1">100% Computer Vision Audited</span>
           </div>
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px]">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px]">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Average Form Accuracy</span>
             <span className="text-2xl md:text-3xl font-display font-black text-[#B7F52A]">{avgFormScore}%</span>
             <span className="text-[10px] font-mono text-[#6F7075] block mt-1">Joint Angle Compliance</span>
           </div>
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px]">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px]">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Energy Expenditure</span>
             <span className="text-2xl md:text-3xl font-display font-black text-white">{Math.round(totalCalsBurned).toLocaleString()} <span className="text-xs font-display text-[#6F7075]">kcal</span></span>
             <span className="text-[10px] font-mono text-[#FFB020] block mt-1">Kinematic Load Estimate</span>

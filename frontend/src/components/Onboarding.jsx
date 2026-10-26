@@ -162,7 +162,7 @@ export default function Onboarding({ onFinish }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#050505] text-[#F7F7F5] relative overflow-hidden select-none font-sans">
+    <div className="min-h-screen flex flex-col justify-center items-center px-3.5 sm:px-6 py-6 sm:py-8 bg-[#050505] text-[#F7F7F5] relative overflow-hidden select-none font-sans">
       {/* Background Subtle Tactical Grid */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.03]" 
@@ -172,7 +172,7 @@ export default function Onboarding({ onFinish }) {
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-[#B7F52A]/5 blur-[140px] pointer-events-none rounded-full" />
 
       {/* Main Container Card */}
-      <div className="w-full max-w-lg bg-[#101012] border border-white/10 rounded-xl p-8 relative z-10 shadow-2xl">
+      <div className="w-full max-w-lg bg-[#101012] border border-white/10 rounded-xl p-5 sm:p-8 relative z-10 shadow-2xl">
         
         {/* Progress Header */}
         {step > 1 && (

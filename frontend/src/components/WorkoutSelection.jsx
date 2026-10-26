@@ -66,17 +66,18 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
   const muscleGroups = Object.keys(exercisesData || {});
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-4 md:px-8 relative select-none">
-      <div className="max-w-7xl mx-auto pt-8 space-y-8 relative z-10 animate-fade-in-up">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-3.5 sm:px-6 md:px-8 relative select-none">
+      <div className="max-w-7xl mx-auto pt-4 sm:pt-6 md:pt-8 space-y-6 md:space-y-8 relative z-10 animate-fade-in-up">
         
         {/* HEADER BAR */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 md:pb-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             {selectedMuscle && (
               <button 
                 onClick={() => setSelectedMuscle(null)}
-                className="w-9 h-9 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-white transition-colors"
+                className="w-10 h-10 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-white transition-colors flex-shrink-0"
                 title="Back to All Categories"
+                aria-label="Back to All Categories"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -88,7 +89,7 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
                   KINEMATIC PROTOCOLS LAB
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-white uppercase">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-black tracking-tight text-white uppercase break-words">
                 {selectedMuscle ? `${cleanMuscleName(selectedMuscle)} Protocols` : 'Workout Library & Protocols'}
               </h1>
             </div>
@@ -96,7 +97,7 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
           
           <button 
             onClick={() => setView('dashboard')}
-            className="px-4 py-2.5 bg-[#101012] border border-white/15 hover:border-white/30 text-white font-display font-bold rounded-[6px] text-xs flex items-center gap-2 self-start md:self-auto transition-all uppercase tracking-wider"
+            className="px-4 py-2.5 min-h-[44px] bg-[#101012] border border-white/15 hover:border-white/30 text-white font-display font-bold rounded-[6px] text-xs flex items-center justify-center gap-2 self-start md:self-auto transition-all uppercase tracking-wider"
           >
             ← Return to Dashboard
           </button>
@@ -247,7 +248,7 @@ export default function WorkoutSelection({ userId, workoutExercises, setView, on
 
                     <button
                       onClick={() => onSelectExercise(exKey, cleanExName)}
-                      className="w-full mt-4 py-2.5 bg-transparent hover:bg-[#B7F52A] border border-[#B7F52A]/40 hover:border-[#B7F52A] text-white hover:text-[#050505] text-xs font-display font-black tracking-wider uppercase rounded-[4px] flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                      className="w-full mt-4 py-3 sm:py-2.5 min-h-[44px] bg-transparent hover:bg-[#B7F52A] border border-[#B7F52A]/40 hover:border-[#B7F52A] text-white hover:text-[#050505] text-xs font-display font-black tracking-wider uppercase rounded-[4px] flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" /> INITIALIZE TRACKER
                     </button>

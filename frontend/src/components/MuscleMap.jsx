@@ -586,11 +586,11 @@ export default function MuscleMap({
             </button>
           )}
 
-          {/* Mobile Front/Back Toggle Switch */}
-          <div className="flex md:hidden items-center bg-[#050505] p-1 rounded-[6px] border border-white/10">
+      {/* Mobile Front/Back Toggle Switch */}
+          <div className="flex md:hidden items-center bg-[#050505] p-1 rounded-[6px] border border-white/10 min-h-[44px]">
             <button
               onClick={() => setMobileView('front')}
-              className={`px-3 py-1 text-xs font-display font-black rounded-[4px] uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs font-display font-black rounded-[4px] uppercase tracking-wider transition-all min-h-[38px] ${
                 mobileView === 'front'
                   ? 'bg-[#B7F52A] text-[#050505] shadow-sm'
                   : 'text-[#6F7075] hover:text-white'
@@ -600,7 +600,7 @@ export default function MuscleMap({
             </button>
             <button
               onClick={() => setMobileView('back')}
-              className={`px-3 py-1 text-xs font-display font-black rounded-[4px] uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 text-xs font-display font-black rounded-[4px] uppercase tracking-wider transition-all min-h-[38px] ${
                 mobileView === 'back'
                   ? 'bg-[#B7F52A] text-[#050505] shadow-sm'
                   : 'text-[#6F7075] hover:text-white'
@@ -613,7 +613,7 @@ export default function MuscleMap({
       </div>
 
       {/* ANATOMICAL BODY MAP PRESENTATION */}
-      <div className="pt-6 relative z-10">
+      <div className="pt-4 md:pt-6 relative z-10">
 
         {/* DESKTOP SIDE-BY-SIDE VIEW (Hidden on Mobile) */}
         <div className="hidden md:grid md:grid-cols-2 gap-6 items-center max-w-4xl mx-auto py-2">
@@ -654,15 +654,15 @@ export default function MuscleMap({
         </div>
 
         {/* MOBILE SINGLE VIEW (With Front / Back Switch) */}
-        <div className="block md:hidden max-w-sm mx-auto py-2">
-          <div className="flex flex-col items-center bg-[#0A0A0A] border border-white/10 rounded-[10px] p-3">
-            <div className="flex items-center justify-between w-full mb-2 px-2">
+        <div className="block md:hidden w-full max-w-sm mx-auto py-2">
+          <div className="flex flex-col items-center bg-[#0A0A0A] border border-white/10 rounded-[10px] p-3 sm:p-4">
+            <div className="flex items-center justify-between w-full mb-2 px-1">
               <span className="text-[11px] font-display font-black text-white uppercase tracking-widest">
                 {mobileView === 'front' ? 'ANTERIOR (FRONT)' : 'POSTERIOR (BACK)'}
               </span>
-              <span className="text-[10px] font-mono text-[#6F7075]">Tap muscle to select</span>
+              <span className="text-[10px] font-mono text-[#B7F52A]">Tap muscle to select</span>
             </div>
-            <div className="w-full flex justify-center py-1">
+            <div className="w-full flex justify-center py-1 touch-manipulation">
               {mobileView === 'front' ? renderFrontSvg() : renderBackSvg()}
             </div>
           </div>
@@ -794,7 +794,7 @@ export default function MuscleMap({
 
                     <button
                       onClick={() => onSelectExercise(protocol.key, protocol.name)}
-                      className="w-full mt-4 py-2.5 bg-[#B7F52A] hover:bg-[#c7ff47] text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[4px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm"
+                      className="w-full mt-4 py-3 sm:py-2.5 min-h-[46px] bg-[#B7F52A] hover:bg-[#c7ff47] text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[4px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" /> START PROTOCOL
                     </button>

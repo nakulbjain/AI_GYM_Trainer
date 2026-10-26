@@ -50,23 +50,25 @@ export default function ChatAssistant({ setView }) {
   }, [messages]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-6 px-4 md:px-8 relative overflow-hidden select-none flex flex-col items-center font-sans">
-      <div className="w-full max-w-4xl flex-1 flex flex-col pt-8 relative z-10">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-6 px-3.5 sm:px-6 md:px-8 relative overflow-hidden select-none flex flex-col items-center font-sans">
+      <div className="w-full max-w-4xl flex-1 flex flex-col pt-4 sm:pt-6 md:pt-8 relative z-10">
         
         {/* HEADER */}
-        <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3 mb-4 sm:mb-6 border-b border-white/10 pb-4">
           <button 
             onClick={() => setView('dashboard')}
-            className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 border border-white/10 transition-colors flex items-center justify-center text-[#F7F7F5]"
+            className="w-10 h-10 rounded bg-[#101012] hover:bg-white/5 border border-white/10 transition-colors flex items-center justify-center text-[#F7F7F5] flex-shrink-0"
+            title="Return to Dashboard"
+            aria-label="Return to Dashboard"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#6F7075]">AI ADAPTIVE KINEMATICS</span>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold uppercase font-serif tracking-tight">Kinematic Chat Consultant</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold uppercase font-serif tracking-tight truncate">Kinematic Chat Consultant</h1>
           </div>
         </div>
 
@@ -74,11 +76,11 @@ export default function ChatAssistant({ setView }) {
         <div className="flex-1 bg-[#101012] border border-white/10 rounded-xl overflow-hidden flex flex-col mb-4 shadow-2xl">
           
           {/* MESSAGES BODY */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-4 max-h-[50vh] md:max-h-[58vh]">
+          <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 max-h-[50vh] md:max-h-[58vh]">
             {messages.map((m, idx) => (
               <div 
                 key={idx} 
-                className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-2 sm:gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.sender !== 'user' && (
                   <div className="w-7 h-7 rounded bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] flex-shrink-0 mt-1">
@@ -87,7 +89,7 @@ export default function ChatAssistant({ setView }) {
                 )}
                 
                 <div 
-                  className={`max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed font-sans ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed font-sans ${
                     m.sender === 'user' 
                       ? 'bg-[#B7F52A] text-[#050505] font-medium' 
                       : 'bg-[#0A0A0A] border border-white/10 text-[#F7F7F5]'
@@ -119,15 +121,15 @@ export default function ChatAssistant({ setView }) {
           </div>
 
           {/* CHIPS SUGGESTIONS */}
-          <div className="px-6 py-3.5 border-t border-white/10 bg-[#0A0A0A]">
+          <div className="px-3.5 sm:px-6 py-2.5 sm:py-3.5 border-t border-white/10 bg-[#0A0A0A]">
             <span className="text-[10px] font-mono text-[#6F7075] uppercase tracking-wider block mb-2">QUICK TELEMETRY INQUIRIES</span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {suggestions.map((s, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSendMessage(s)}
                   disabled={sending}
-                  className="px-3 py-1.5 bg-[#101012] hover:bg-white/5 border border-white/10 hover:border-[#B7F52A]/40 transition-all rounded text-xs text-[#6F7075] hover:text-[#F7F7F5] font-sans active:scale-95"
+                  className="px-2.5 sm:px-3 py-1.5 bg-[#101012] hover:bg-white/5 border border-white/10 hover:border-[#B7F52A]/40 transition-all rounded text-xs text-[#6F7075] hover:text-[#F7F7F5] font-sans active:scale-95"
                 >
                   {s}
                 </button>
@@ -136,20 +138,21 @@ export default function ChatAssistant({ setView }) {
           </div>
 
           {/* INPUT AREA */}
-          <div className="p-4 border-t border-white/10 bg-[#101012] flex gap-3 items-center">
+          <div className="p-3 sm:p-4 border-t border-white/10 bg-[#101012] flex gap-2 sm:gap-3 items-center">
             <input 
               type="text" 
-              placeholder="Ask regarding biomechanics, injury avoidance, movement substitution..."
+              placeholder="Ask regarding biomechanics, injury avoidance..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               disabled={sending}
-              className="flex-1 bg-[#0A0A0A] border border-white/15 outline-none rounded px-4 py-2.5 text-sm focus:border-[#B7F52A] text-[#F7F7F5] placeholder:text-[#6F7075] font-sans transition-all"
+              className="flex-1 bg-[#0A0A0A] border border-white/15 outline-none rounded px-3.5 sm:px-4 py-2.5 min-h-[44px] text-base sm:text-sm focus:border-[#B7F52A] text-[#F7F7F5] placeholder:text-[#6F7075] font-sans transition-all"
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={sending || !inputText.trim()}
-              className="px-4 py-2.5 bg-[#B7F52A] hover:bg-[#a6df24] rounded text-[#050505] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center disabled:opacity-40"
+              className="px-4 py-2.5 min-h-[44px] bg-[#B7F52A] hover:bg-[#a6df24] rounded text-[#050505] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center disabled:opacity-40 flex-shrink-0"
+              aria-label="Send message"
             >
               {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>

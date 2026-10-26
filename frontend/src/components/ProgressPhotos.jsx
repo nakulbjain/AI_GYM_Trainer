@@ -116,43 +116,45 @@ export default function ProgressPhotos({ userId, setView }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-16 px-4 md:px-8 relative overflow-hidden select-none font-sans">
-      <div className="max-w-6xl mx-auto pt-8 space-y-6 relative z-10">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-16 px-3.5 sm:px-6 md:px-8 relative overflow-hidden select-none font-sans">
+      <div className="max-w-6xl mx-auto pt-4 sm:pt-6 md:pt-8 space-y-6 relative z-10">
         
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-5">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setView('dashboard')}
-              className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 border border-white/10 transition-colors flex items-center justify-center text-[#F7F7F5]"
+              className="w-10 h-10 rounded bg-[#101012] hover:bg-white/5 border border-white/10 transition-colors flex items-center justify-center text-[#F7F7F5] flex-shrink-0"
+              title="Return to Dashboard"
+              aria-label="Return to Dashboard"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
                 <span className="text-[11px] font-mono uppercase tracking-widest text-[#6F7075]">MORPHOLOGICAL KINEMATIC TIMELINE</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold uppercase font-serif tracking-tight">Progress Photo Comparison</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase font-serif tracking-tight break-words">Progress Photo Comparison</h1>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
             <button
               onClick={() => setShowGrid(!showGrid)}
-              className={`px-4 py-2 rounded border font-mono text-xs uppercase tracking-wider flex items-center gap-2 transition-all ${
+              className={`flex-1 sm:flex-none px-3.5 py-2.5 min-h-[44px] rounded border font-mono text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                 showGrid 
                   ? 'bg-[#B7F52A]/10 border-[#B7F52A] text-[#B7F52A]' 
                   : 'bg-[#101012] border-white/10 text-[#6F7075] hover:text-[#F7F7F5]'
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
-              Alignment Grid: {showGrid ? 'ON' : 'OFF'}
+              Grid: {showGrid ? 'ON' : 'OFF'}
             </button>
 
-            <label className="px-4 py-2 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded flex items-center gap-2 cursor-pointer transition-colors">
+            <label className="flex-1 sm:flex-none px-4 py-2.5 min-h-[44px] bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded flex items-center justify-center gap-2 cursor-pointer transition-colors">
               <Upload className="w-3.5 h-3.5" />
-              {uploading ? 'Archiving...' : 'Upload Ingestion'}
+              {uploading ? 'Archiving...' : 'Upload Image'}
               <input 
                 type="file" 
                 accept="image/*" 
@@ -165,7 +167,7 @@ export default function ProgressPhotos({ userId, setView }) {
         </div>
 
         {/* COMPARISON PANELS (SIDE-BY-SIDE) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           
           {/* Photo A Box */}
           <div className="bg-[#101012] border border-white/10 p-6 rounded-xl space-y-4 flex flex-col items-center">
@@ -250,7 +252,7 @@ export default function ProgressPhotos({ userId, setView }) {
           </div>
 
           {photos.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 sm:gap-3">
               {photos.map((ph) => {
                 const isSelectedA = photoA && photoA.id === ph.id;
                 const isSelectedB = photoB && photoB.id === ph.id;

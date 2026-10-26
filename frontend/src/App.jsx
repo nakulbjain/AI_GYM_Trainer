@@ -209,6 +209,8 @@ export default function App() {
   const sidebarViews = ['dashboard', 'select-workout', 'analytics', 'photos', 'profile'];
   const showSidebar = userId && sidebarViews.includes(view);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const renderSidebar = () => {
     const navItems = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -218,31 +220,82 @@ export default function App() {
       { id: 'profile', label: 'Athlete Profile', icon: User },
     ];
 
+    const handleNavClick = (id) => {
+      setView(id);
+      setIsMobileMenuOpen(false);
+    };
+
     return (
-      <aside className={`w-64 bg-[#0A0A0A] border-r border-white/10 flex flex-col h-screen sticky top-0 flex-shrink-0 select-none z-30 transition-all duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full absolute md:relative md:w-0 overflow-hidden border-none'}`}>
-        {/* Branding Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between gap-3">
+      <>
+        {/* Mobile Header Bar */}
+        <header className="md:hidden w-full bg-[#0A0A0A] border-b border-white/10 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.25)]">
-              <Activity className="w-5 h-5 text-[#B7F52A]" />
+            <div className="w-8 h-8 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] shadow-[0_0_12px_rgba(183,245,42,0.2)]">
+              <Activity className="w-4 h-4 text-[#B7F52A]" />
             </div>
             <div>
-              <span className="font-display font-black tracking-tight text-white text-base block leading-tight">AI GYM TRAINER</span>
-              <span className="text-[10px] font-bold text-[#6F7075] tracking-widest uppercase block">PRO ATHLETIC ENGINE</span>
+              <span className="font-display font-black tracking-tight text-white text-sm block leading-tight">AI GYM TRAINER</span>
+              <span className="text-[9px] font-bold text-[#6F7075] tracking-widest uppercase block">PRO ATHLETIC ENGINE</span>
             </div>
           </div>
-          <button 
-            onClick={() => setIsSidebarOpen(false)}
-            className="w-8 h-8 rounded-[6px] bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-center text-[#6F7075] hover:text-white transition-colors"
-            title="Collapse Sidebar"
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="w-11 h-11 rounded-[6px] bg-[#101012] hover:bg-[#151517] border border-white/15 flex items-center justify-center text-white active:scale-95 transition-all"
+            aria-label="Open Navigation Menu"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <Menu className="w-5 h-5 text-white" />
           </button>
-        </div>
+        </header>
+
+        {/* Mobile Backdrop */}
+        {isMobileMenuOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Sidebar Drawer (Fixed on mobile when open, sticky on desktop) */}
+        <aside
+          className={`
+            fixed md:sticky top-0 bottom-0 md:bottom-auto left-0 h-screen w-72 md:w-64 bg-[#0A0A0A] border-r border-white/10 flex flex-col flex-shrink-0 select-none z-50 md:z-30 transition-transform duration-300
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            ${!isSidebarOpen ? 'md:-translate-x-full md:w-0 md:overflow-hidden md:border-none' : ''}
+          `}
+        >
+          {/* Branding Header */}
+          <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] shadow-[0_0_15px_rgba(183,245,42,0.25)]">
+                <Activity className="w-5 h-5 text-[#B7F52A]" />
+              </div>
+              <div>
+                <span className="font-display font-black tracking-tight text-white text-base block leading-tight">AI GYM TRAINER</span>
+                <span className="text-[10px] font-bold text-[#6F7075] tracking-widest uppercase block">PRO ATHLETIC ENGINE</span>
+              </div>
+            </div>
+            {/* Desktop Collapse button */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="hidden md:flex w-8 h-8 rounded-[6px] bg-white/5 hover:bg-white/10 border border-white/5 items-center justify-center text-[#6F7075] hover:text-white transition-colors"
+              title="Collapse Sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {/* Mobile Close button (44px target) */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden w-11 h-11 rounded-[6px] bg-[#101012] border border-white/10 flex items-center justify-center text-[#6F7075] hover:text-white transition-colors"
+              aria-label="Close Navigation Menu"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </div>
 
         {/* Athlete Profile Badge */}
         <div 
-          onClick={() => setView('profile')}
+          onClick={() => handleNavClick('profile')}
           className="p-3.5 mx-3 my-4 bg-[#101012] border border-white/10 hover:border-[#B7F52A]/40 rounded-[8px] flex items-center gap-3 cursor-pointer group transition-all"
           title="View & Edit Profile"
         >
@@ -267,7 +320,7 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                onClick={() => setView(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 className={`w-full px-3.5 py-3 rounded-[6px] text-left text-xs font-semibold tracking-wide transition-all flex items-center gap-3 ${
                   isActive 
                     ? 'bg-[#B7F52A]/10 text-[#B7F52A] border border-[#B7F52A]/40 font-bold shadow-[0_0_15px_rgba(183,245,42,0.15)]' 
@@ -306,7 +359,10 @@ export default function App() {
                     <span className="text-[11px] font-bold text-white">{dashboardData.workout_streak || 0} Days Active</span>
                     {dashboardData.completed_today && dashboardData.completed_today.length > 0 && (
                       <button 
-                        onClick={() => setShowWorkoutsModal(true)}
+                        onClick={() => {
+                          setShowWorkoutsModal(true);
+                          setIsMobileMenuOpen(false);
+                        }}
                         className="px-1.5 py-0.5 bg-[#B7F52A]/10 hover:bg-[#B7F52A]/20 border border-[#B7F52A]/30 text-[#B7F52A] text-[8px] font-display font-black tracking-widest uppercase rounded-[4px]"
                       >
                         LOGS
@@ -323,7 +379,10 @@ export default function App() {
         {/* Logout at bottom */}
         <div className="p-3 border-t border-white/10">
           <button
-            onClick={handleLogout}
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              handleLogout();
+            }}
             className="w-full px-3.5 py-2.5 rounded-[6px] text-left text-xs font-display font-bold text-[#FF4D4F] hover:bg-[#FF4D4F]/10 transition-all flex items-center gap-2.5 border border-transparent hover:border-[#FF4D4F]/30"
           >
             <LogOut className="w-4 h-4 text-[#FF4D4F]" />
@@ -331,8 +390,9 @@ export default function App() {
           </button>
         </div>
       </aside>
-    );
-  };
+    </>
+  );
+};
 
   if (view === 'loading') {
     return (
@@ -350,11 +410,11 @@ export default function App() {
       {showSidebar && renderSidebar()}
 
       <div className={`flex-1 min-w-0 relative ${showSidebar && !isSidebarOpen ? 'pl-16 md:pl-20' : ''} transition-all duration-300`}>
-        {/* Expand button visible only when sidebar is hidden */}
+        {/* Expand button visible only on desktop when sidebar is hidden */}
         {showSidebar && !isSidebarOpen && (
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="absolute top-6 left-6 z-40 w-9 h-9 rounded-[6px] bg-[#101012] border border-white/15 flex items-center justify-center text-[#6F7075] hover:text-white hover:border-[#B7F52A]/50 shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+            className="hidden md:flex absolute top-6 left-6 z-40 w-9 h-9 rounded-[6px] bg-[#101012] border border-white/15 items-center justify-center text-[#6F7075] hover:text-white hover:border-[#B7F52A]/50 shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
             title="Expand Sidebar"
           >
             <Menu className="w-4 h-4" />

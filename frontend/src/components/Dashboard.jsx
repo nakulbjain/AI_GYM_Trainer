@@ -288,22 +288,22 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
   const caloriesPercent = calcProgressPercent(intake_today.calories, goals.calories_target || 2400);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-4 md:px-8 relative select-none">
-      <div className="max-w-7xl mx-auto pt-8 space-y-8 relative z-10 animate-fade-in-up">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-20 px-3.5 sm:px-6 md:px-8 relative select-none">
+      <div className="max-w-7xl mx-auto pt-4 sm:pt-6 md:pt-8 space-y-6 md:space-y-8 relative z-10 animate-fade-in-up">
         
         {/* ATHLETIC HERO BANNER */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-white/10">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6 pb-5 md:pb-6 border-b border-white/10">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1.5 md:mb-2">
               <span className="w-2 h-2 rounded-full bg-[#B7F52A] shadow-[0_0_8px_rgba(183,245,42,0.8)]"></span>
               <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase">
                 ATHLETIC PERFORMANCE HUB
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight text-white uppercase">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-black tracking-tight text-white uppercase break-words">
               READY TO TRAIN, <span className="text-[#B7F52A]">{userName || 'ATHLETE'}</span>?
             </h1>
-            <p className="text-[#6F7075] text-xs md:text-sm tracking-wide mt-1 font-medium">
+            <p className="text-[#6F7075] text-xs md:text-sm tracking-wide mt-1 font-medium leading-relaxed">
               Real-time computer vision pose analysis active. Optimize range of motion and prevent biomechanical faults.
             </p>
           </div>
@@ -312,14 +312,14 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
           <div className="flex items-center gap-3 w-full lg:w-auto">
             <button 
               onClick={() => setShowReadinessModal(true)}
-              className="bg-[#101012] hover:bg-[#151517] border border-white/15 hover:border-[#B7F52A]/40 p-4 rounded-[8px] flex items-center gap-3.5 transition-all text-left w-full lg:w-auto group"
+              className="bg-[#101012] hover:bg-[#151517] border border-white/15 hover:border-[#B7F52A]/40 p-3.5 sm:p-4 rounded-[8px] flex items-center gap-3 transition-all text-left w-full lg:w-auto group min-h-[48px]"
             >
               <div className="w-10 h-10 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                 <HeartPulse className="w-5 h-5 text-[#B7F52A]" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <span className="text-[9px] font-display font-bold text-[#6F7075] uppercase tracking-wider block">Bio-Readiness Score</span>
-                <span className="text-base font-display font-black text-white group-hover:text-[#B7F52A] transition-colors">
+                <span className="text-sm sm:text-base font-display font-black text-white group-hover:text-[#B7F52A] transition-colors truncate block">
                   {readinessResult ? `${readinessResult.score}% OPTIMAL` : 'CHECK RECOVERY STATUS →'}
                 </span>
               </div>
@@ -328,17 +328,17 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
         </div>
 
         {/* 4-COLUMN KINETIC METRIC TILES */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Workout Streak</span>
-            <span className="text-3xl font-display font-black text-white">{workout_streak} <span className="text-xs font-display text-[#6F7075]">DAYS</span></span>
+            <span className="text-2xl sm:text-3xl font-display font-black text-white">{workout_streak} <span className="text-xs font-display text-[#6F7075]">DAYS</span></span>
             <span className="text-[10px] font-mono text-[#B7F52A] block mt-1">{workout_completion}% Program Consistency</span>
           </div>
 
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Water Hydration</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-display font-black text-white">
+              <span className="text-2xl sm:text-3xl font-display font-black text-white">
                 {typeof intake_today.water === 'number'
                   ? Number(intake_today.water.toFixed(2))
                   : (intake_today.water || 0)}
@@ -350,10 +350,10 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
             </div>
           </div>
 
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Protein Synthesis</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-display font-black text-white">{intake_today.protein}</span>
+              <span className="text-2xl sm:text-3xl font-display font-black text-white">{intake_today.protein}</span>
               <span className="text-xs font-display text-[#6F7075]">/ {goals.protein_target || 140}g</span>
             </div>
             <div className="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -361,10 +361,10 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
             </div>
           </div>
 
-          <div className="bg-[#101012] border border-white/10 p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
+          <div className="bg-[#101012] border border-white/10 p-4 sm:p-5 rounded-[8px] hover:border-[#B7F52A]/30 transition-all">
             <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Caloric Target</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-display font-black text-white">{intake_today.calories}</span>
+              <span className="text-2xl sm:text-3xl font-display font-black text-white">{intake_today.calories}</span>
               <span className="text-xs font-display text-[#6F7075]">/ {goals.calories_target || 2400}kcal</span>
             </div>
             <div className="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -374,41 +374,41 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
         </div>
 
         {/* QUICK FUEL LOGGING BAR */}
-        <div className="bg-[#101012] border border-white/10 p-4 rounded-[8px] flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#101012] border border-white/10 p-3.5 sm:p-4 rounded-[8px] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-[#B7F52A]" />
             <span className="text-xs font-display font-bold text-white uppercase tracking-wider">Quick Intake Logging:</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => handleQuickLog('water', 0.25)}
               disabled={addingWater}
-              className="px-3 py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-3 py-2 sm:py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
             >
-              <Droplet className="w-3.5 h-3.5 text-[#B7F52A]" /> +250ml Water
+              <Droplet className="w-3.5 h-3.5 text-[#B7F52A] flex-shrink-0" /> <span className="truncate">+250ml Water</span>
             </button>
             <button
               onClick={() => handleQuickLog('protein', 25)}
               disabled={addingProtein}
-              className="px-3 py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-3 py-2 sm:py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
             >
-              <Apple className="w-3.5 h-3.5 text-[#B7F52A]" /> +25g Protein
+              <Apple className="w-3.5 h-3.5 text-[#B7F52A] flex-shrink-0" /> <span className="truncate">+25g Protein</span>
             </button>
             <button
               onClick={() => handleQuickLog('calories', 200)}
               disabled={addingCal}
-              className="px-3 py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-3 py-2 sm:py-1.5 bg-[#0A0A0A] hover:bg-white/5 border border-white/10 text-xs font-display font-bold text-white rounded-[4px] transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
             >
-              <Flame className="w-3.5 h-3.5 text-[#FFB020]" /> +200 kcal
+              <Flame className="w-3.5 h-3.5 text-[#FFB020] flex-shrink-0" /> <span className="truncate">+200 kcal</span>
             </button>
             <button
               onClick={() => {
                 setCustomError('');
                 setShowCustomModal(true);
               }}
-              className="px-3 py-1.5 bg-transparent hover:bg-[#B7F52A]/10 border border-[#B7F52A]/40 hover:border-[#B7F52A] text-xs font-display font-black text-white rounded-[4px] transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-3 py-2 sm:py-1.5 bg-transparent hover:bg-[#B7F52A]/10 border border-[#B7F52A]/40 hover:border-[#B7F52A] text-xs font-display font-black text-white rounded-[4px] transition-all active:scale-95 flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
             >
-              <Plus className="w-3.5 h-3.5 text-[#B7F52A]" /> + CUSTOM
+              <Plus className="w-3.5 h-3.5 text-[#B7F52A] flex-shrink-0" /> + CUSTOM
             </button>
           </div>
         </div>
@@ -663,7 +663,7 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
       {/* --- CUSTOM INTAKE MODAL --- */}
       {showCustomModal && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget && !submittingCustom) {
               setShowCustomModal(false);
@@ -679,10 +679,10 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
           aria-modal="true"
           aria-labelledby="custom-intake-title"
         >
-          <div className="w-full max-w-sm sm:max-w-md bg-[#101012] p-5 sm:p-6 rounded-[10px] border border-white/15 shadow-2xl animate-fade-in-up relative">
+          <div className="w-[calc(100vw-24px)] max-w-sm sm:max-w-md max-h-[92vh] overflow-y-auto bg-[#101012] p-4 sm:p-6 rounded-[10px] border border-white/15 shadow-2xl animate-fade-in-up relative">
             <div className="flex justify-between items-start mb-4 pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A]">
+                <div className="w-8 h-8 rounded-[6px] bg-[#B7F52A]/10 border border-[#B7F52A]/30 flex items-center justify-center text-[#B7F52A] flex-shrink-0">
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
@@ -696,7 +696,7 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
                 onClick={() => !submittingCustom && setShowCustomModal(false)}
                 disabled={submittingCustom}
                 aria-label="Close custom intake modal"
-                className="text-[#6F7075] hover:text-white p-1 rounded transition-colors disabled:opacity-50"
+                className="w-9 h-9 flex items-center justify-center text-[#6F7075] hover:text-white rounded transition-colors disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -733,7 +733,7 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
                       if (customError) setCustomError('');
                     }}
                     disabled={submittingCustom}
-                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-12"
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-3 sm:py-2.5 text-base sm:text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-12"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
                     ml
@@ -769,7 +769,7 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
                       if (customError) setCustomError('');
                     }}
                     disabled={submittingCustom}
-                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-10"
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-3 sm:py-2.5 text-base sm:text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-10"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
                     g
@@ -800,7 +800,7 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
                       if (customError) setCustomError('');
                     }}
                     disabled={submittingCustom}
-                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-2.5 text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-14"
+                    className="w-full bg-[#0A0A0A] border border-white/10 focus:border-[#B7F52A] rounded-[6px] px-3.5 py-3 sm:py-2.5 text-base sm:text-sm font-mono text-white placeholder-[#6F7075] outline-none transition-all pr-14"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#6F7075]">
                     kcal
@@ -814,14 +814,14 @@ export default function Dashboard({ userId, userName, setView, onStartWorkout, d
                   type="button"
                   onClick={() => setShowCustomModal(false)}
                   disabled={submittingCustom}
-                  className="w-1/3 py-2.5 bg-transparent border border-white/15 hover:bg-white/5 font-display font-bold rounded-[6px] text-xs text-white uppercase transition-colors disabled:opacity-50"
+                  className="w-1/3 min-h-[44px] py-2.5 bg-transparent border border-white/15 hover:bg-white/5 font-display font-bold rounded-[6px] text-xs text-white uppercase transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingCustom || (!customWaterMl.trim() && !customProteinG.trim() && !customCaloriesKcal.trim())}
-                  className="w-2/3 py-2.5 bg-[#B7F52A] hover:bg-[#c7ff47] disabled:opacity-40 text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[6px] transition-all active:scale-98 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(183,245,42,0.3)]"
+                  className="w-2/3 min-h-[44px] py-2.5 bg-[#B7F52A] hover:bg-[#c7ff47] disabled:opacity-40 text-[#050505] font-display font-black text-xs uppercase tracking-wider rounded-[6px] transition-all active:scale-98 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(183,245,42,0.3)]"
                 >
                   {submittingCustom ? 'LOGGING...' : 'ADD INTAKE'}
                 </button>

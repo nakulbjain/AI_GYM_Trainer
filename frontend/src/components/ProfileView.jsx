@@ -98,11 +98,11 @@ export default function ProfileView({ userId, userName, handleLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-16 px-4 md:px-8 relative overflow-hidden select-none font-sans">
-      <div className="max-w-5xl mx-auto pt-8 space-y-6 relative z-10">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-16 px-3.5 sm:px-6 md:px-8 relative overflow-hidden select-none font-sans">
+      <div className="max-w-5xl mx-auto pt-4 sm:pt-6 md:pt-8 space-y-6 relative z-10">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
@@ -113,7 +113,7 @@ export default function ProfileView({ userId, userName, handleLogout }) {
           
           <button 
             onClick={() => setShowReadinessModal(true)}
-            className="px-4 py-2 bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 min-h-[44px] bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505] font-bold text-xs uppercase tracking-wider rounded transition-colors flex items-center justify-center gap-2 self-start sm:self-auto"
           >
             <Activity className="w-4 h-4" />
             Check Kinetic Readiness

@@ -595,11 +595,11 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-12 px-4 md:px-8 flex flex-col items-center select-none relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#050505] text-[#F7F7F5] pb-12 px-3.5 sm:px-6 md:px-8 flex flex-col items-center select-none relative overflow-hidden font-sans">
       
       {/* Dynamic Audio Feedback & Diagnostic Trigger Strip */}
-      <div className="w-full max-w-7xl pt-4 pb-3 flex flex-wrap items-center justify-between gap-3 text-[#6F7075] font-mono text-[11px] tracking-wider uppercase border-b border-white/10 mb-4">
-        <div className="flex items-center gap-3">
+      <div className="w-full max-w-7xl pt-3 sm:pt-4 pb-2.5 sm:pb-3 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 text-[#6F7075] font-mono text-[11px] tracking-wider uppercase border-b border-white/10 mb-3 sm:mb-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#101012] border border-white/10 text-[#B7F52A]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#B7F52A] animate-pulse"></span>
             STREAM: KINETIC-CV-01
@@ -607,7 +607,7 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
           <span className="hidden sm:inline">ENGINE: POSE-DETECTION-BIO</span>
           <span className="hidden md:inline">CALIBRATION: STABLE</span>
         </div>
-        <div className="flex items-center gap-4 text-[#F7F7F5]">
+        <div className="flex items-center gap-3 sm:gap-4 text-[#F7F7F5]">
           <div className="flex items-center gap-1.5 font-mono">
             <span>PIPELINE: <strong className="text-[#B7F52A]">60 FPS</strong></span>
           </div>
@@ -618,33 +618,37 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
       </div>
 
       {/* TOP CONTROLS & EXERCISE TITLE */}
-      <div className="w-full max-w-7xl flex justify-between items-center mb-4 z-10">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleFinishSession}
-            className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 transition-colors flex items-center justify-center border border-white/10 text-[#F7F7F5]"
-            title="End Session"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#6F7075]">ACTIVE PROTOCOL</span>
+      <div className="w-full max-w-7xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 z-10">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleFinishSession}
+              className="w-10 h-10 rounded bg-[#101012] hover:bg-white/5 transition-colors flex items-center justify-center border border-white/10 text-[#F7F7F5] flex-shrink-0"
+              title="End Session"
+              aria-label="End Session"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="w-2 h-2 rounded-full bg-[#B7F52A]"></span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#6F7075]">ACTIVE PROTOCOL</span>
+              </div>
+              <h2 className="text-base sm:text-lg md:text-xl font-bold uppercase font-serif tracking-tight truncate">{currentCleanName.replace(/_/g, ' ')}</h2>
             </div>
-            <h2 className="text-lg md:text-xl font-bold uppercase font-serif tracking-tight">{currentCleanName.replace(/_/g, ' ')}</h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button 
             onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`w-9 h-9 rounded border flex items-center justify-center transition-all ${
+            className={`w-10 h-10 rounded border flex items-center justify-center transition-all flex-shrink-0 ${
               voiceEnabled 
                 ? 'bg-[#B7F52A]/10 border-[#B7F52A] text-[#B7F52A]' 
                 : 'bg-[#101012] border-white/10 text-[#6F7075]'
             }`}
             title={voiceEnabled ? "Mute Coach Audio" : "Enable Coach Audio"}
+            aria-label={voiceEnabled ? "Mute Coach Audio" : "Enable Coach Audio"}
           >
             {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-[#6F7075]" />}
           </button>
@@ -652,7 +656,8 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
           <button 
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Full Screen" : "Full Screen Camera"}
-            className="w-9 h-9 rounded bg-[#101012] hover:bg-white/5 border border-white/10 text-[#6F7075] hover:text-[#F7F7F5] flex items-center justify-center transition-all"
+            aria-label={isFullscreen ? "Exit Full Screen" : "Full Screen Camera"}
+            className="w-10 h-10 rounded bg-[#101012] hover:bg-white/5 border border-white/10 text-[#6F7075] hover:text-[#F7F7F5] flex items-center justify-center transition-all flex-shrink-0"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -663,13 +668,13 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
               setIsRunning(nextState);
               if (nextState && !isFullscreen) toggleFullscreen();
             }}
-            className={`px-4 py-2 rounded text-xs font-bold font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+            className={`flex-1 sm:flex-none px-3.5 sm:px-4 py-2.5 min-h-[40px] rounded text-xs font-bold font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
               isRunning 
                 ? 'bg-[#FFB020] text-[#050505] shadow-md' 
                 : 'bg-[#B7F52A] hover:bg-[#a6df24] text-[#050505]'
             }`}
           >
-            {isRunning ? <><Pause className="w-3.5 h-3.5" /> Pause Tracking</> : <><Play className="w-3.5 h-3.5 fill-current" /> Initialize Camera</>}
+            {isRunning ? <><Pause className="w-3.5 h-3.5 flex-shrink-0" /> <span className="truncate">Pause Tracking</span></> : <><Play className="w-3.5 h-3.5 fill-current flex-shrink-0" /> <span className="truncate">Initialize Camera</span></>}
           </button>
         </div>
       </div>
@@ -730,54 +735,54 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
 
                 {/* Top Floating Translucent HUD Strip */}
                 {isRunning && (
-                  <div className="relative z-30 w-full flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#050505]/85 backdrop-blur-md border border-white/10 shadow-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-[#101012] rounded border border-white/10 text-[#B7F52A]">
-                        <Dumbbell className="w-4 h-4" />
+                  <div className="relative z-30 w-full flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-lg bg-[#050505]/85 backdrop-blur-md border border-white/10 shadow-xl">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 sm:p-2 bg-[#101012] rounded border border-white/10 text-[#B7F52A]">
+                        <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs font-serif uppercase tracking-tight text-[#F7F7F5]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs font-serif uppercase tracking-tight text-[#F7F7F5] truncate max-w-[120px] sm:max-w-none">
                             {currentCleanName.replace(/_/g, ' ')}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] font-mono text-[9px] uppercase">
-                            AI KINEMATICS
+                          <span className="px-1 py-0.2 rounded bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] font-mono text-[8px] uppercase">
+                            AI
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono text-[10px] uppercase text-[#B7F52A] flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="font-mono text-[9px] sm:text-[10px] uppercase text-[#B7F52A] flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#B7F52A] animate-pulse"></span>
-                            PHASE: {stage}
+                            {stage}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 sm:gap-6 font-mono">
+                    <div className="flex items-center gap-2.5 sm:gap-4 md:gap-6 font-mono self-end xs:self-auto">
                       {/* Reps Metric */}
                       <div className="flex flex-col text-right">
-                        <span className="text-[9px] uppercase text-[#6F7075]">REPS</span>
-                        <span className="text-xl sm:text-2xl font-black text-[#F7F7F5] leading-none">
+                        <span className="text-[8px] sm:text-[9px] uppercase text-[#6F7075]">REPS</span>
+                        <span className="text-lg sm:text-2xl font-black text-[#F7F7F5] leading-none">
                           {reps}
                         </span>
                       </div>
-                      <div className="w-px h-6 bg-white/10"></div>
+                      <div className="w-px h-5 sm:h-6 bg-white/10"></div>
                       {/* Live ROM Gauge */}
                       <div className="flex flex-col text-right">
-                        <span className="text-[9px] uppercase text-[#6F7075]">LIVE ROM</span>
-                        <span className="text-xl sm:text-2xl font-black text-[#B7F52A] leading-none">{romPct}%</span>
+                        <span className="text-[8px] sm:text-[9px] uppercase text-[#6F7075]">ROM</span>
+                        <span className="text-lg sm:text-2xl font-black text-[#B7F52A] leading-none">{romPct}%</span>
                       </div>
-                      <div className="w-px h-6 bg-white/10"></div>
+                      <div className="w-px h-5 sm:h-6 bg-white/10"></div>
                       {/* Form Score */}
                       <div className="flex flex-col text-right">
-                        <span className="text-[9px] uppercase text-[#6F7075]">FORM</span>
-                        <span className="text-xl sm:text-2xl font-black text-[#F7F7F5] leading-none">{accuracy}%</span>
+                        <span className="text-[8px] sm:text-[9px] uppercase text-[#6F7075]">FORM</span>
+                        <span className="text-lg sm:text-2xl font-black text-[#F7F7F5] leading-none">{accuracy}%</span>
                       </div>
-                      <div className="w-px h-6 bg-white/10"></div>
+                      <div className="w-px h-5 sm:h-6 bg-white/10"></div>
                       {/* Angle */}
                       <div className="flex flex-col text-right">
-                        <span className="text-[9px] uppercase text-[#6F7075]">ANGLE</span>
-                        <span className="text-xl sm:text-2xl font-black text-[#FFB020] leading-none">{activeAngle}°</span>
+                        <span className="text-[8px] sm:text-[9px] uppercase text-[#6F7075]">ANG</span>
+                        <span className="text-lg sm:text-2xl font-black text-[#FFB020] leading-none">{activeAngle}°</span>
                       </div>
                     </div>
                   </div>
@@ -1011,15 +1016,15 @@ export default function WorkoutArea({ userId, workoutExercises, restDuration, se
 
       {/* --- SESSION SUMMARY MODAL --- */}
       {showSummary && summaryData && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#101012] border border-white/15 p-6 rounded-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="w-[calc(100vw-24px)] max-w-lg bg-[#101012] border border-white/15 p-4 sm:p-6 rounded-xl shadow-2xl relative max-h-[92vh] overflow-y-auto">
             
-            <div className="text-center flex flex-col items-center mb-6 border-b border-white/10 pb-5">
-              <div className="w-12 h-12 bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] rounded flex items-center justify-center mb-3">
-                <Award className="w-6 h-6" />
+            <div className="text-center flex flex-col items-center mb-5 sm:mb-6 border-b border-white/10 pb-4 sm:pb-5">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 bg-[#B7F52A]/10 border border-[#B7F52A]/30 text-[#B7F52A] rounded flex items-center justify-center mb-2.5 sm:mb-3">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <span className="text-[10px] font-mono text-[#B7F52A] uppercase tracking-widest">SESSION COMPLETE</span>
-              <h3 className="text-2xl font-bold uppercase font-serif tracking-tight text-[#F7F7F5] mt-1">Biomechanical Telemetry Dossier</h3>
+              <h3 className="text-xl sm:text-2xl font-bold uppercase font-serif tracking-tight text-[#F7F7F5] mt-1">Biomechanical Telemetry Dossier</h3>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 font-mono">
