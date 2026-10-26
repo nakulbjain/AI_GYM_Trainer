@@ -1,5 +1,6 @@
 // frontend/src/App.jsx
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import WorkoutArea from './components/WorkoutArea';
@@ -8,9 +9,9 @@ import ProgressPhotos from './components/ProgressPhotos';
 import WorkoutSelection from './components/WorkoutSelection';
 import ProfileView from './components/ProfileView';
 import ChatAssistant from './components/ChatAssistant';
-import { LayoutDashboard, Dumbbell, History, Image, User, MessageSquare, LogOut, Activity, Droplet, Trophy, ChevronLeft, Menu } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, History, Image, User, MessageSquare, LogOut, Activity, Trophy, ChevronLeft, Menu } from 'lucide-react';
 
-function LocalWorkoutView({ userId, selectedExercise, setView }) {
+function LocalWorkoutView({ userId, selectedExercise, navigate }) {
   const [status, setStatus] = useState('launching');
   const [error, setError] = useState('');
 
@@ -42,7 +43,7 @@ function LocalWorkoutView({ userId, selectedExercise, setView }) {
         <div className="w-14 h-14 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20 mb-2 mx-auto animate-pulse">
           <Dumbbell className="w-6 h-6 text-brand-primary" />
         </div>
-        
+
         {status === 'launching' && (
           <>
             <h2 className="text-xl font-bold">Launching Tracking Window...</h2>
@@ -74,7 +75,7 @@ function LocalWorkoutView({ userId, selectedExercise, setView }) {
             <p className="text-xs text-brand-secondary/95 bg-brand-secondary/5 border border-brand-secondary/20 rounded-xl p-3">
               {error}
             </p>
-            <button 
+            <button
               onClick={launchLocal}
               className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary/90 transition-colors font-bold text-xs rounded-xl"
             >
@@ -84,8 +85,8 @@ function LocalWorkoutView({ userId, selectedExercise, setView }) {
         )}
 
         <div className="pt-4">
-          <button 
-            onClick={() => setView('dashboard')}
+          <button
+            onClick={() => navigate('/dashboard')}
             className="w-full py-3.5 bg-dark-border/40 hover:bg-dark-border/60 transition-colors text-xs font-semibold rounded-2xl"
           >
             Back to Dashboard
@@ -97,15 +98,56 @@ function LocalWorkoutView({ userId, selectedExercise, setView }) {
 }
 
 export default function App() {
-  const [view, setView] = useState('loading');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [authInitialized, setAuthInitialized] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState('');
   const [userGoal, setUserGoal] = useState('Muscle Gain');
-  const [workoutExercises, setWorkoutExercises] = useState([]);
-  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [workoutExercises, setWorkoutExercises] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('gym_workout_exercises');
+      return stored ? JSON.parse(stored) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const [selectedExercise, setSelectedExercise] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('gym_selected_exercise');
+      return stored ? JSON.parse(stored) : null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [dashboardData, setDashboardData] = useState(null);
   const [showWorkoutsModal, setShowWorkoutsModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const updateSelectedExercise = (exercise) => {
+    setSelectedExercise(exercise);
+    if (exercise) {
+      sessionStorage.setItem('gym_selected_exercise', JSON.stringify(exercise));
+    } else {
+      sessionStorage.removeItem('gym_selected_exercise');
+    }
+  };
+
+  const updateWorkoutExercises = (exercises) => {
+    setWorkoutExercises(exercises || []);
+    if (exercises && exercises.length > 0) {
+      sessionStorage.setItem('gym_workout_exercises', JSON.stringify(exercises));
+    } else {
+      sessionStorage.removeItem('gym_workout_exercises');
+    }
+  };
+
+  // Synchronous route scroll reset
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const fetchDashboardData = async (uid) => {
     const targetUserId = uid || userId;
@@ -121,51 +163,18 @@ export default function App() {
     }
   };
 
-  const handleQuickLogSidebar = async (type, amount) => {
-    if (!userId) return;
-    try {
-      const payload = {};
-      if (type === 'water') {
-        payload.water_liters = amount;
-      }
-      if (type === 'protein') {
-        payload.protein_grams = amount;
-      }
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/intake/${userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error('Quick log failed');
-      const intake = await res.json();
-      
-      setDashboardData(prev => ({
-        ...prev,
-        intake_today: {
-          ...prev.intake_today,
-          protein: intake.protein_grams,
-          water: intake.water_liters
-        }
-      }));
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
   useEffect(() => {
     if (userId) {
       fetchDashboardData(userId);
     } else {
       setDashboardData(null);
     }
-  }, [userId, view]);
+  }, [userId, location.pathname]);
 
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('gym_user_avatar') || '');
 
+  // Auth initialization
   useEffect(() => {
-    // Check if user has already onboarded
     const storedId = localStorage.getItem('gym_user_id');
     const storedName = localStorage.getItem('gym_user_name');
     const storedGoal = localStorage.getItem('gym_user_goal');
@@ -174,10 +183,11 @@ export default function App() {
       setUserId(parseInt(storedId));
       setUserName(storedName);
       if (storedGoal) setUserGoal(storedGoal);
-      setView('dashboard');
     } else {
-      setView('onboarding');
+      setUserId(null);
+      setUserName('');
     }
+    setAuthInitialized(true);
 
     const handleAvatarChange = () => {
       setUserAvatar(localStorage.getItem('gym_user_avatar') || '');
@@ -191,7 +201,7 @@ export default function App() {
     setUserName(name);
     const storedGoal = localStorage.getItem('gym_user_goal') || 'Muscle Gain';
     setUserGoal(storedGoal);
-    setView('dashboard');
+    navigate('/dashboard');
   };
 
   const handleLogout = () => {
@@ -203,25 +213,64 @@ export default function App() {
     setUserId(null);
     setUserName('');
     setUserGoal('Muscle Gain');
-    setView('onboarding');
+    updateSelectedExercise(null);
+    updateWorkoutExercises([]);
+    navigate('/onboarding', { replace: true });
   };
 
-  const sidebarViews = ['dashboard', 'select-workout', 'analytics', 'photos', 'profile'];
-  const showSidebar = userId && sidebarViews.includes(view);
+  // setView adapter for backwards compatibility with child components
+  const setViewAdapter = (viewId) => {
+    switch (viewId) {
+      case 'dashboard':
+        navigate('/dashboard');
+        break;
+      case 'select-workout':
+        updateSelectedExercise(null);
+        navigate('/workout-selection');
+        break;
+      case 'workout':
+        navigate('/workout');
+        break;
+      case 'local-workout':
+        navigate('/local-workout');
+        break;
+      case 'analytics':
+        navigate('/analytics');
+        break;
+      case 'photos':
+        navigate('/photos');
+        break;
+      case 'profile':
+        navigate('/profile');
+        break;
+      case 'chat':
+        navigate('/chat');
+        break;
+      case 'onboarding':
+        navigate('/onboarding');
+        break;
+      default:
+        navigate('/dashboard');
+        break;
+    }
+  };
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // App routes where sidebar should be visible
+  const sidebarPaths = ['/dashboard', '/workout-selection', '/analytics', '/photos', '/profile', '/chat'];
+  const showSidebar = !!userId && sidebarPaths.includes(location.pathname);
 
   const renderSidebar = () => {
     const navItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'select-workout', label: 'Workout Library', icon: Dumbbell },
-      { id: 'analytics', label: 'Performance Analytics', icon: History },
-      { id: 'photos', label: 'Progress Log', icon: Image },
-      { id: 'profile', label: 'Athlete Profile', icon: User },
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/workout-selection', label: 'Workout Library', icon: Dumbbell },
+      { path: '/analytics', label: 'Performance Analytics', icon: History },
+      { path: '/photos', label: 'Progress Log', icon: Image },
+      { path: '/chat', label: 'AI Assistant', icon: MessageSquare },
+      { path: '/profile', label: 'Athlete Profile', icon: User },
     ];
 
-    const handleNavClick = (id) => {
-      setView(id);
+    const handleNavClick = (path) => {
+      navigate(path);
       setIsMobileMenuOpen(false);
     };
 
@@ -293,108 +342,110 @@ export default function App() {
             </button>
           </div>
 
-        {/* Athlete Profile Badge */}
-        <div 
-          onClick={() => handleNavClick('profile')}
-          className="p-3.5 mx-3 my-4 bg-[#101012] border border-white/10 hover:border-[#B7F52A]/40 rounded-[8px] flex items-center gap-3 cursor-pointer group transition-all"
-          title="View & Edit Profile"
-        >
-          <div className="w-9 h-9 rounded-[6px] bg-[#151517] border border-white/10 flex items-center justify-center font-display font-black text-xs text-[#B7F52A] uppercase flex-shrink-0 overflow-hidden">
-            {userAvatar ? (
-              <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-[6px]" />
-            ) : (
-              userName ? userName.substring(0, 2).toUpperCase() : 'AI'
-            )}
+          {/* Athlete Profile Badge */}
+          <div
+            onClick={() => handleNavClick('/profile')}
+            className={`p-3.5 mx-3 my-4 bg-[#101012] border rounded-[8px] flex items-center gap-3 cursor-pointer group transition-all ${
+              location.pathname === '/profile' ? 'border-[#B7F52A]/60' : 'border-white/10 hover:border-[#B7F52A]/40'
+            }`}
+            title="View & Edit Profile"
+          >
+            <div className="w-9 h-9 rounded-[6px] bg-[#151517] border border-white/10 flex items-center justify-center font-display font-black text-xs text-[#B7F52A] uppercase flex-shrink-0 overflow-hidden">
+              {userAvatar ? (
+                <img src={userAvatar} alt="Profile" className="w-full h-full object-cover rounded-[6px]" />
+              ) : (
+                userName ? userName.substring(0, 2).toUpperCase() : 'AI'
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="font-display font-bold text-white text-xs block truncate group-hover:text-[#B7F52A] transition-colors">{userName || 'Athlete'}</span>
+              <span className="text-[9px] font-black text-[#B7F52A] tracking-wider block uppercase truncate">{userGoal}</span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <span className="font-display font-bold text-white text-xs block truncate group-hover:text-[#B7F52A] transition-colors">{userName || 'Athlete'}</span>
-            <span className="text-[9px] font-black text-[#B7F52A] tracking-wider block uppercase truncate">{userGoal}</span>
-          </div>
-        </div>
 
-        {/* Navigation List */}
-        <div className="flex-1 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = view === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full px-3.5 py-3 rounded-[6px] text-left text-xs font-semibold tracking-wide transition-all flex items-center gap-3 ${
-                  isActive 
-                    ? 'bg-[#B7F52A]/10 text-[#B7F52A] border border-[#B7F52A]/40 font-bold shadow-[0_0_15px_rgba(183,245,42,0.15)]' 
-                    : 'text-[#6F7075] border border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#B7F52A]' : 'text-[#6F7075]'}`} />
-                <span className="font-display font-bold">{item.label}</span>
-              </button>
-            );
-          })}
+          {/* Navigation List */}
+          <div className="flex-1 px-3 space-y-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavClick(item.path)}
+                  className={`w-full px-3.5 py-3 rounded-[6px] text-left text-xs font-semibold tracking-wide transition-all flex items-center gap-3 ${
+                    isActive
+                      ? 'bg-[#B7F52A]/10 text-[#B7F52A] border border-[#B7F52A]/40 font-bold shadow-[0_0_15px_rgba(183,245,42,0.15)]'
+                      : 'text-[#6F7075] border border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#B7F52A]' : 'text-[#6F7075]'}`} />
+                  <span className="font-display font-bold">{item.label}</span>
+                </button>
+              );
+            })}
 
-          {/* Daily Protocol Progress Module inside Sidebar */}
-          {dashboardData && (
-            <div className="mt-5 pt-4 border-t border-white/10 space-y-2 pb-3">
-              <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Session Streak</span>
+            {/* Daily Protocol Progress Module inside Sidebar */}
+            {dashboardData && (
+              <div className="mt-5 pt-4 border-t border-white/10 space-y-2 pb-3">
+                <span className="text-[10px] font-display font-black text-[#6F7075] tracking-widest uppercase block mb-1">Session Streak</span>
 
-              <div className="bg-[#101012] border border-white/10 rounded-[8px] p-3 flex items-center gap-3 hover:border-[#B7F52A]/30 transition-all">
-                <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                    <circle cx="20" cy="20" r="16" className="stroke-white/5 fill-transparent" strokeWidth="2.5" />
-                    <circle
-                      cx="20" cy="20" r="16"
-                      className="stroke-[#B7F52A] fill-transparent"
-                      strokeWidth="2.5"
-                      strokeDasharray={2 * Math.PI * 16}
-                      strokeDashoffset={2 * Math.PI * 16 - (Math.min(100, dashboardData.workout_completion || 0) / 100) * (2 * Math.PI * 16)}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <Trophy className="w-3.5 h-3.5 text-[#B7F52A] relative z-10" />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start gap-1">
-                    <span className="text-[11px] font-bold text-white">{dashboardData.workout_streak || 0} Days Active</span>
-                    {dashboardData.completed_today && dashboardData.completed_today.length > 0 && (
-                      <button 
-                        onClick={() => {
-                          setShowWorkoutsModal(true);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="px-1.5 py-0.5 bg-[#B7F52A]/10 hover:bg-[#B7F52A]/20 border border-[#B7F52A]/30 text-[#B7F52A] text-[8px] font-display font-black tracking-widest uppercase rounded-[4px]"
-                      >
-                        LOGS
-                      </button>
-                    )}
+                <div className="bg-[#101012] border border-white/10 rounded-[8px] p-3 flex items-center gap-3 hover:border-[#B7F52A]/30 transition-all">
+                  <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                    <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                      <circle cx="20" cy="20" r="16" className="stroke-white/5 fill-transparent" strokeWidth="2.5" />
+                      <circle
+                        cx="20" cy="20" r="16"
+                        className="stroke-[#B7F52A] fill-transparent"
+                        strokeWidth="2.5"
+                        strokeDasharray={2 * Math.PI * 16}
+                        strokeDashoffset={2 * Math.PI * 16 - (Math.min(100, dashboardData.workout_completion || 0) / 100) * (2 * Math.PI * 16)}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <Trophy className="w-3.5 h-3.5 text-[#B7F52A] relative z-10" />
                   </div>
-                  <span className="text-[9px] font-mono text-[#6F7075] block mt-0.5">{dashboardData.workout_completion || 0}% Target Met</span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-1">
+                      <span className="text-[11px] font-bold text-white">{dashboardData.workout_streak || 0} Days Active</span>
+                      {dashboardData.completed_today && dashboardData.completed_today.length > 0 && (
+                        <button
+                          onClick={() => {
+                            setShowWorkoutsModal(true);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="px-1.5 py-0.5 bg-[#B7F52A]/10 hover:bg-[#B7F52A]/20 border border-[#B7F52A]/30 text-[#B7F52A] text-[8px] font-display font-black tracking-widest uppercase rounded-[4px]"
+                        >
+                          LOGS
+                        </button>
+                      )}
+                    </div>
+                    <span className="text-[9px] font-mono text-[#6F7075] block mt-0.5">{dashboardData.workout_completion || 0}% Target Met</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Logout at bottom */}
-        <div className="p-3 border-t border-white/10">
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              handleLogout();
-            }}
-            className="w-full px-3.5 py-2.5 rounded-[6px] text-left text-xs font-display font-bold text-[#FF4D4F] hover:bg-[#FF4D4F]/10 transition-all flex items-center gap-2.5 border border-transparent hover:border-[#FF4D4F]/30"
-          >
-            <LogOut className="w-4 h-4 text-[#FF4D4F]" />
-            DISCONNECT SESSION
-          </button>
-        </div>
-      </aside>
-    </>
-  );
-};
+          {/* Logout at bottom */}
+          <div className="p-3 border-t border-white/10">
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                handleLogout();
+              }}
+              className="w-full px-3.5 py-2.5 rounded-[6px] text-left text-xs font-display font-bold text-[#FF4D4F] hover:bg-[#FF4D4F]/10 transition-all flex items-center gap-2.5 border border-transparent hover:border-[#FF4D4F]/30"
+            >
+              <LogOut className="w-4 h-4 text-[#FF4D4F]" />
+              DISCONNECT SESSION
+            </button>
+          </div>
+        </aside>
+      </>
+    );
+  };
 
-  if (view === 'loading') {
+  if (!authInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#F7F7F5]">
         <div className="text-center space-y-4">
@@ -420,81 +471,162 @@ export default function App() {
             <Menu className="w-4 h-4" />
           </button>
         )}
-        {view === 'onboarding' && (
-          <Onboarding onFinish={handleFinishOnboarding} />
-        )}
 
-        {view === 'dashboard' && (
-          <Dashboard 
-            userId={userId} 
-            userName={userName} 
-            setView={setView} 
-            data={dashboardData}
-            setData={setDashboardData}
-            fetchDashboardData={() => fetchDashboardData(userId)}
-            onStartWorkout={(exercises) => {
-              setWorkoutExercises(exercises);
-              setView('select-workout');
-            }}
+        <Routes>
+          {/* Root redirect */}
+          <Route
+            path="/"
+            element={userId ? <Navigate to="/dashboard" replace /> : <Navigate to="/onboarding" replace />}
           />
-        )}
 
-        {view === 'select-workout' && (
-          <WorkoutSelection 
-            userId={userId} 
-            workoutExercises={workoutExercises} 
-            setView={(newView) => {
-              if (newView === 'select-workout') setSelectedExercise(null);
-              setView(newView);
-            }} 
-            onSelectExercise={(key, name) => {
-              setSelectedExercise({ key, name });
-              setView('workout');
-            }}
+          {/* Onboarding */}
+          <Route
+            path="/onboarding"
+            element={userId ? <Navigate to="/dashboard" replace /> : <Onboarding onFinish={handleFinishOnboarding} />}
           />
-        )}
 
-        {view === 'local-workout' && (
-          <LocalWorkoutView 
-            userId={userId} 
-            selectedExercise={selectedExercise}
-            setView={setView} 
+          {/* Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <Dashboard
+                  userId={userId}
+                  userName={userName}
+                  setView={setViewAdapter}
+                  data={dashboardData}
+                  setData={setDashboardData}
+                  fetchDashboardData={() => fetchDashboardData(userId)}
+                  onStartWorkout={(exercises) => {
+                    updateWorkoutExercises(exercises);
+                    navigate('/workout-selection');
+                  }}
+                />
+              )
+            }
           />
-        )}
 
-        {view === 'workout' && (
-          <WorkoutArea 
-            userId={userId} 
-            workoutExercises={selectedExercise ? [[selectedExercise.key, selectedExercise.name]] : (workoutExercises || [])} 
-            setView={(newView) => {
-              setSelectedExercise(null);
-              setView(newView);
-            }}
-            onWorkoutLogged={() => {
-              setSelectedExercise(null);
-              setView('analytics');
-            }}
+          {/* Workout Selection / Library / Muscle Map */}
+          <Route
+            path="/workout-selection"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <WorkoutSelection
+                  userId={userId}
+                  workoutExercises={workoutExercises}
+                  setView={setViewAdapter}
+                  onSelectExercise={(key, name) => {
+                    updateSelectedExercise({ key, name });
+                    navigate('/workout');
+                  }}
+                />
+              )
+            }
           />
-        )}
 
-        {view === 'analytics' && (
-          <Analytics userId={userId} setView={setView} />
-        )}
+          {/* Workout session: requires active exercise context, otherwise safely redirect to /workout-selection */}
+          <Route
+            path="/workout"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : !selectedExercise && (!workoutExercises || workoutExercises.length === 0) ? (
+                <Navigate to="/workout-selection" replace />
+              ) : (
+                <WorkoutArea
+                  userId={userId}
+                  workoutExercises={selectedExercise ? [[selectedExercise.key, selectedExercise.name]] : workoutExercises}
+                  setView={setViewAdapter}
+                  onWorkoutLogged={() => {
+                    updateSelectedExercise(null);
+                    navigate('/analytics');
+                  }}
+                />
+              )
+            }
+          />
 
-        {view === 'photos' && (
-          <ProgressPhotos userId={userId} setView={setView} />
-        )}
+          {/* Local OpenCV workout window */}
+          <Route
+            path="/local-workout"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <LocalWorkoutView
+                  userId={userId}
+                  selectedExercise={selectedExercise}
+                  navigate={navigate}
+                />
+              )
+            }
+          />
 
-        {view === 'profile' && (
-          <ProfileView userId={userId} userName={userName} handleLogout={handleLogout} />
-        )}
+          {/* Performance Analytics */}
+          <Route
+            path="/analytics"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <Analytics userId={userId} setView={setViewAdapter} />
+              )
+            }
+          />
+
+          {/* Progress Photos Log */}
+          <Route
+            path="/photos"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <ProgressPhotos userId={userId} setView={setViewAdapter} />
+              )
+            }
+          />
+
+          {/* Athlete Profile */}
+          <Route
+            path="/profile"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <ProfileView userId={userId} userName={userName} handleLogout={handleLogout} />
+              )
+            }
+          />
+
+          {/* AI Kinematic Chat Assistant */}
+          <Route
+            path="/chat"
+            element={
+              !userId ? (
+                <Navigate to="/onboarding" replace />
+              ) : (
+                <ChatAssistant setView={setViewAdapter} />
+              )
+            }
+          />
+
+          {/* Fallback for unknown routes */}
+          <Route
+            path="*"
+            element={<Navigate to={userId ? "/dashboard" : "/onboarding"} replace />}
+          />
+        </Routes>
       </div>
 
       {/* --- WORKOUT LOGS MODAL --- */}
       {showWorkoutsModal && dashboardData && dashboardData.completed_today && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#0b0e14] p-8 rounded-3xl border border-white/10 animate-fade-in-up relative">
-            
+
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-xl font-extrabold tracking-tight text-white">Today's Completed Workouts</h3>
@@ -526,7 +658,7 @@ export default function App() {
             </div>
 
             <div className="pt-6 flex justify-end">
-              <button 
+              <button
                 onClick={() => setShowWorkoutsModal(false)}
                 className="w-full py-3.5 bg-dark-border/40 hover:bg-dark-border/60 transition-colors font-semibold rounded-xl text-xs text-white"
               >
