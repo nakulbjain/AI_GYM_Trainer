@@ -9,6 +9,7 @@ import ProgressPhotos from './components/ProgressPhotos';
 import WorkoutSelection from './components/WorkoutSelection';
 import ProfileView from './components/ProfileView';
 import ChatAssistant from './components/ChatAssistant';
+import Footer from './components/Footer';
 import { LayoutDashboard, Dumbbell, History, Image, User, MessageSquare, LogOut, Activity, Trophy, ChevronLeft, Menu } from 'lucide-react';
 
 function LocalWorkoutView({ userId, selectedExercise, navigate }) {
@@ -460,7 +461,7 @@ export default function App() {
     <div className="min-h-screen bg-[#050505] text-[#F7F7F5] flex flex-col md:flex-row relative overflow-x-hidden selection:bg-[#B7F52A] selection:text-[#050505]">
       {showSidebar && renderSidebar()}
 
-      <div className={`flex-1 min-w-0 relative ${showSidebar && !isSidebarOpen ? 'pl-16 md:pl-20' : ''} transition-all duration-300`}>
+      <div className={`flex-1 min-w-0 relative flex flex-col min-h-screen ${showSidebar && !isSidebarOpen ? 'pl-16 md:pl-20' : ''} transition-all duration-300`}>
         {/* Expand button visible only on desktop when sidebar is hidden */}
         {showSidebar && !isSidebarOpen && (
           <button
@@ -620,6 +621,9 @@ export default function App() {
             element={<Navigate to={userId ? "/dashboard" : "/onboarding"} replace />}
           />
         </Routes>
+
+        {/* Global Responsive Footer on authenticated content pages */}
+        {showSidebar && <Footer />}
       </div>
 
       {/* --- WORKOUT LOGS MODAL --- */}
